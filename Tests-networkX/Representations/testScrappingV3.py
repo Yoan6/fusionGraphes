@@ -87,7 +87,7 @@ def build_graph(sections):
     return G, node_labels, edge_labels
 
 # URL de la page Wikipedia à traiter
-url_wikipedia = 'https://fr.wikipedia.org/wiki/Montferrat'
+url_wikipedia = 'https://fr.wikipedia.org/wiki/Vourey'
 
 # Extraction des sections récursivement à partir de l'URL donnée
 sections = extract_sections_recursive(url_wikipedia)
