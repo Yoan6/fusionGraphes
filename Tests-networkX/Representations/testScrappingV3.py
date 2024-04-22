@@ -2,8 +2,16 @@ import requests
 from bs4 import BeautifulSoup
 import networkx as nx
 import matplotlib.pyplot as plt
+import re
+import html
 
-# Fonction pour extraire les sections récursivement à partir d'une URL donnée
+# Nettoye le texte tout en conservant les caractères spéciaux tels que les accents
+def clean_text(text):
+    # Remplace les espaces insécables par des espaces normaux
+    texte_propre = text.replace('\xa0', ' ')
+    return texte_propre
+
+# Extrait les sections récursivement à partir d'une URL donnée
 def extract_sections_recursive(url):
     # Récupération de la réponse HTTP
     response = requests.get(url)
@@ -15,12 +23,48 @@ def extract_sections_recursive(url):
     current_node = root
     parents = [root]
 
+    # On ajoute une section pour l'infobox de la page
+    infobox = soup.find('table', {'class': 'infobox_v2'})
+    if infobox:
+        # Création d'une nouvelle section pour l'infobox
+        infobox_data = []
+
+        current_section = None  # Garde une trace de la section actuelle
+
+        # Liste des titres des sections de l'infobox
+        titles = {"Administration", "Démographie", "Géographie", "Élections", "Liens"}
+
+        # Parcourir les lignes de l'infobox
+        for row in infobox.find_all('tr'):
+            # Vérifier si la ligne contient une balise <th>
+            th = row.find('th')
+            if th:
+                th_text = clean_text(th.get_text(separator=' ', strip=True))
+                # Si la ligne contient une balise <td>, c'est une donnée de titre
+                td = row.find('td')
+                if td and not td.find('div', {'id': 'img_toggle_0'}):  # Vérification de la structure spécifique
+                    # Texte de la balise <td>
+                    td_text = clean_text(td.get_text(separator=' ', strip=True))
+                    # Ajouter les données à la section actuelle
+                    current_section['children'].append(
+                        {'title': th_text, 'text': td_text, 'balise': 'tr', 'children': []})
+                # Sinon, la ligne contient un titre de section
+                else:
+                    # Vérifie si le texte de la balise <th> est un titre de section
+                    if th_text in titles:
+                        title = th_text
+                        # Créer une nouvelle section
+                        current_section = {'title': title, 'text': '', 'balise': 'title', 'children': []}
+                        infobox_data.append(current_section)
+
+        print("Infobox : ", infobox_data)
+
     # Parcours des balises h2, h3, h4, h5, h6 dans le code HTML de la page
     for tag in soup.find_all(['h2', 'h3', 'h4', 'h5', 'h6']):
         # Récupération du niveau de la balise
         level = int(tag.name[1])
         # Récupération du titre de la section
-        title = tag.text.strip().split('[')[0]
+        title = clean_text(tag.text.strip().split('[')[0])
 
         # Déplacement dans la hiérarchie des sections si un niveau inférieur est rencontré
         while len(parents) >= level:
@@ -41,7 +85,7 @@ def extract_sections_recursive(url):
         while current_tag and current_tag.name not in ['h2', 'h3', 'h4', 'h5', 'h6']:
             if current_tag.name == 'p':
                 # Création d'un nouveau nœud pour chaque balise <p>
-                p_node = {'title': 'Paragraph', 'text': current_tag.get_text().strip(), 'balise': 'p', 'children': []}
+                p_node = {'title': 'Paragraph', 'text': clean_text(current_tag.get_text().strip()), 'balise': 'p', 'children': []}
                 current_node['children'].append(p_node)
             elif current_tag.name == 'ul':
                 # Création d'un nouveau nœud pour la balise <ul>
@@ -50,7 +94,7 @@ def extract_sections_recursive(url):
                 # Parcours des balises <li> dans la balise <ul>
                 for li_tag in current_tag.find_all('li'):
                     # Création d'un nouveau nœud pour chaque balise <li>
-                    li_node = {'title': 'List Item', 'text': li_tag.get_text().strip(), 'balise': 'li', 'children': []}
+                    li_node = {'title': 'List Item', 'text': clean_text(li_tag.get_text().strip()), 'balise': 'li', 'children': []}
                     ul_node['children'].append(li_node)
             # Passage à la balise suivante
             current_tag = current_tag.find_next_sibling()
