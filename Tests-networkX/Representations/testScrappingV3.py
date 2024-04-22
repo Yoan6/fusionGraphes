@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import re
 import html
 
-# Nettoye le texte tout en conservant les caractères spéciaux tels que les accents
+# Nettoie le texte tout en conservant les caractères spéciaux tels que les accents
 def clean_text(text):
     # Remplace les espaces insécables par des espaces normaux
     texte_propre = text.replace('\xa0', ' ')
@@ -22,6 +22,9 @@ def extract_sections_recursive(url):
     root = {'title': 'Root', 'text': '', 'balise': 'Root', 'children': []}
     current_node = root
     parents = [root]
+
+    # Création de la section pour l'infobox
+    infobox_section = {'title': 'Infobox', 'text': '', 'balise': 'h2', 'children': []}
 
     # On ajoute une section pour l'infobox de la page
     infobox = soup.find('table', {'class': 'infobox_v2'})
@@ -42,22 +45,27 @@ def extract_sections_recursive(url):
                 th_text = clean_text(th.get_text(separator=' ', strip=True))
                 # Si la ligne contient une balise <td>, c'est une donnée de titre
                 td = row.find('td')
-                if td and not td.find('div', {'id': 'img_toggle_0'}):  # Vérification de la structure spécifique
+                if td and not td.find('div', {'id': 'img_toggle_0'}):  # Permet de ne pas prendre en compte la partie sur la localisation car trop compliqué d'interpréter les données
                     # Texte de la balise <td>
                     td_text = clean_text(td.get_text(separator=' ', strip=True))
-                    # Ajouter les données à la section actuelle
+                    # Ajoute les données à la section actuelle
                     current_section['children'].append(
                         {'title': th_text, 'text': td_text, 'balise': 'tr', 'children': []})
-                # Sinon, la ligne contient un titre de section
                 else:
                     # Vérifie si le texte de la balise <th> est un titre de section
                     if th_text in titles:
                         title = th_text
-                        # Créer une nouvelle section
+                        # Crée une nouvelle section pour le titre
                         current_section = {'title': title, 'text': '', 'balise': 'title', 'children': []}
                         infobox_data.append(current_section)
 
         print("Infobox : ", infobox_data)
+
+        # Ajout des données de l'infobox à la section de l'infobox
+        infobox_section['children'] = infobox_data
+
+    # Ajout de la section de l'infobox à la racine
+    root['children'].append(infobox_section)
 
     # Parcours des balises h2, h3, h4, h5, h6 dans le code HTML de la page
     for tag in soup.find_all(['h2', 'h3', 'h4', 'h5', 'h6']):
@@ -135,8 +143,10 @@ url_wikipedia = 'https://fr.wikipedia.org/wiki/Vourey'
 
 # Extraction des sections récursivement à partir de l'URL donnée
 sections = extract_sections_recursive(url_wikipedia)
-# On enlève la première section qui est le sommaire et les deux dernières sections qui sont les références et les liens externes
-sections = sections[1:-2]
+# On enlève la deuxième section qui est le sommaire et les deux dernières sections qui sont les références et les liens externes tout en gardant la première section qui est l'infobox
+sections = sections[0:1] + sections[2:-2]
+# On enlève les deux dernières sections qui sont les références et les liens externes
+sections = sections[:-2]
 print("Sections : ", sections)
 
 # Construction du graphe des sections et sous-sections
