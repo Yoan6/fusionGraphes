@@ -2,8 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 import networkx as nx
 import matplotlib.pyplot as plt
-import re
-import html
 
 # Nettoie le texte tout en conservant les caractères spéciaux tels que les accents
 def clean_text(text):
@@ -139,7 +137,7 @@ def build_graph(sections):
     return G, node_labels, edge_labels
 
 # URL de la page Wikipedia à traiter
-url_wikipedia = 'https://fr.wikipedia.org/wiki/Vourey'
+url_wikipedia = 'https://fr.wikipedia.org/wiki/Moirans'
 
 # Extraction des sections récursivement à partir de l'URL donnée
 sections = extract_sections_recursive(url_wikipedia)

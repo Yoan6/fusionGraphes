@@ -1,41 +1,46 @@
-import csv
 import networkx as nx
 import matplotlib.pyplot as plt
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+
+# Récupère les données du fichier CSV des élus municipaux
+def extract_csv(url):
+    # Récupération de la réponse HTTP
+    response = requests.get(url)
+    # Analyse du contenu HTML de la page
+    soup = BeautifulSoup(response.content, 'html.parser')
+
+    # On regarde le header avec l'id : 'resource-d5f400de-ae3f-4966-8cb6-a85c70c6c24a-header'
+    header = soup.find('header', {'id': 'resource-d5f400de-ae3f-4966-8cb6-a85c70c6c24a-header'})
+    # On récupère le lien de téléchargement du fichier CSV des élus municipaux
+    download_a = header.find('a', {'class': 'fr-btn fr-btn--sm fr-icon-download-line matomo_download'})
+    download_link = download_a['href']
+    # On charge le fichier CSV dans un DataFrame
+    data = pd.read_csv(download_link, dtype=str, sep=';', encoding='utf-8')
+    return data
+
+# URL du site des élus à traiter
+url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/'
+
+# Extraction des données du fichier CSV
+csv_file = extract_csv(url_elus)
+
+# Filtrage des données pour la ville
+ville_data = csv_file[csv_file['Libellé de la commune'] == 'Vourey']
 
 # Crée un graphe dirigé
 G = nx.DiGraph()
 
-# Ouvre le fichier CSV
-with open('elus-municipaux-cm.csv', newline='', encoding='utf-8') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')
-    # Saute la première ligne qui contient les en-têtes
-    next(reader)
-    for row in reader:
-        # Vérifie si la ligne concerne la ville de Vourey
-        if row[5] == "Vourey":
-            # Récupére les informations de l'élu
-            code_dept, libelle_dept, code_collectivite, libelle_collectivite, code_commune, libelle_commune, nom, prenom, sexe, date_naissance, code_cat_soc_pro, libelle_cat_soc_pro, date_debut_mandat, libelle_fonction, date_debut_fonction, nationalite = row
-
-            # Crée un nœud pour l'élu
-            G.add_node(nom + ' ' + prenom)
-
-            # Ajoute les attributs à ce nœud
-            G.nodes[nom + ' ' + prenom]['Code du département'] = code_dept
-            G.nodes[nom + ' ' + prenom]['Libellé du département'] = libelle_dept
-            G.nodes[nom + ' ' + prenom]['Code de la collectivité à statut particulier'] = code_collectivite
-            G.nodes[nom + ' ' + prenom]['Libellé de la collectivité à statut particulier'] = libelle_collectivite
-            G.nodes[nom + ' ' + prenom]['Code de la commune'] = code_commune
-            G.nodes[nom + ' ' + prenom]['Libellé de la commune'] = libelle_commune
-            G.nodes[nom + ' ' + prenom]['Nom de l\'élu'] = nom
-            G.nodes[nom + ' ' + prenom]['Prénom de l\'élu'] = prenom
-            G.nodes[nom + ' ' + prenom]['Code sexe'] = sexe
-            G.nodes[nom + ' ' + prenom]['Date de naissance'] = date_naissance
-            G.nodes[nom + ' ' + prenom]['Code de la catégorie socio-professionnelle'] = code_cat_soc_pro
-            G.nodes[nom + ' ' + prenom]['Libellé de la catégorie socio-professionnelle'] = libelle_cat_soc_pro
-            G.nodes[nom + ' ' + prenom]['Date de début du mandat'] = date_debut_mandat
-            G.nodes[nom + ' ' + prenom]['Libellé de la fonction'] = libelle_fonction
-            G.nodes[nom + ' ' + prenom]['Date de début de la fonction'] = date_debut_fonction
-            G.nodes[nom + ' ' + prenom]['Code nationalité'] = nationalite
+# Ajout des nœuds et des attributs au graphe
+for _, row in ville_data.iterrows():
+    # Nom complet de l'élu
+    nom_prenom = row['Nom de l\'élu'] + ' ' + row['Prénom de l\'élu']
+    # On retire les colonnes inutiles (prenom, nom et libellé de la commune)
+    attributes = row.drop(['Nom de l\'élu', 'Prénom de l\'élu', 'Libellé de la commune'])
+    # On crée un nœud pour l'élu avec ses attributs
+    G.add_node(nom_prenom, **attributes)
 
 # Affiche les nœuds et les attributs du graphe
 print("Noeuds et attributs:")
