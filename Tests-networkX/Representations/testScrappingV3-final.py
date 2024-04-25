@@ -169,8 +169,6 @@ url_wikipedia = 'https://fr.wikipedia.org/wiki/Riverie'
 sections = extract_sections_recursive(url_wikipedia)
 # On enlève la deuxième section qui est le sommaire et les deux dernières sections qui sont les références et les liens externes tout en gardant la première section qui est l'infobox
 sections = sections[0:1] + sections[2:-2]
-# On enlève les deux dernières sections qui sont les références et les liens externes
-sections = sections[:-2]
 print("Sections : ", sections)
 
 # Construction du graphe des sections et sous-sections

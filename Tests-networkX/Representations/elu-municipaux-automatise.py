@@ -4,7 +4,6 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-
 # Récupère les données du fichier CSV des élus municipaux
 def extract_csv(url):
     # Récupération de la réponse HTTP
@@ -27,34 +26,80 @@ url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/
 # Extraction des données du fichier CSV
 csv_file = extract_csv(url_elus)
 
-ville = 'Moirans'
+ville = 'Riverie'
 
 # Filtrage des données pour la ville
 ville_data = csv_file[csv_file['Libellé de la commune'] == ville]
 
-# Crée un graphe dirigé
-G = nx.DiGraph()
+# Fonction pour construire le graphe des élus municipaux
+def build_graph(csv_data):
+    # Initialisation du graphe dirigé
+    G = nx.DiGraph()
+    node_labels = {}
+    edge_labels = {}
+    node_details = {}  # Structure de données pour stocker les informations détaillées de chaque nœud
+    # Compteur pour les identifiants des nœuds
+    node_id_counter = 0
 
-# Ajout des nœuds et des attributs au graphe
-for _, row in ville_data.iterrows():
-    # Nom complet de l'élu
-    nom_prenom = row['Nom de l\'élu'] + ' ' + row['Prénom de l\'élu']
-    # On retire les colonnes inutiles (prenom, nom et libellé de la commune)
-    attributes = row.drop(['Nom de l\'élu', 'Prénom de l\'élu', 'Libellé de la commune'])
-    # On crée un nœud pour l'élu avec ses attributs
-    G.add_node(nom_prenom, **attributes)
+    def add_nodes():
+        # Compteur pour les identifiants des nœuds
+        nonlocal node_id_counter  # Utilisation de la variable externe node_id_counter
+        # Nom complet de l'élu
+        nom_prenom = row['Nom de l\'élu'] + ' ' + row['Prénom de l\'élu']
 
-# Affiche les nœuds et les attributs du graphe
+        # Création de l'identifiant unique du nœud en utilisant le compteur
+        node_id = node_id_counter
+        node_id_counter += 1  # Incrémentation du compteur pour le prochain nœud
+
+        # Ajout du nœud au graphe avec son identifiant unique
+        G.add_node(node_id)
+
+        # Ajout du titre du nœud dans le libellé pour l'affichage du graphe
+        node_labels[node_id] = nom_prenom
+
+        # Ajout des informations détaillées dans la structure de données node_details
+        node_details[node_id] = {
+            'title': nom_prenom,
+            'text': '',
+            'balise': 'tr'
+        }
+
+        # Ajout des attributs de l'élu comme des nœuds de balise 'tr' sous le nœud 'title'
+        for k, v in row.items():
+            attribute_node_id = node_id_counter
+            node_id_counter += 1
+            # Ajout d'un noeud pour chaque attribut de l'élu
+            G.add_node(attribute_node_id)
+            # Ajout du libellé du nœud pour l'affichage du graphe
+            node_labels[attribute_node_id] = f"{k}: {v}"
+            # Ajout d'un lien du nœud 'title' vers le nœud 'tr'
+            G.add_edge(node_id, attribute_node_id)
+            node_details[attribute_node_id] = {
+                'title': k,
+                'text': v,
+                'balise': 'tr'
+            }
+
+    # Ajout des nœuds et des attributs au graphe
+    for _, row in csv_data.iterrows():
+        add_nodes()
+
+    return G, node_labels, edge_labels, node_details
+
+# Construction du graphe des élus municipaux
+G_elus, node_labels, edge_labels, node_details_elus = build_graph(ville_data)
+
+# Affiche les nœuds et les attributs du graphe à partir des données de node_details
+print("Node detail:", node_details_elus.items())
 print("Noeuds et attributs:")
-for node, attrs in G.nodes(data=True):
-    print(node, attrs)
+for node, details in node_details_elus.items():
+    print(f"Noeud {node}: {details['title']}")
+    for k, v in details.items():
+        print(f"    {k}: {v}")
 
 # Dessine le graphe
 plt.figure(figsize=(10, 6))
-pos = nx.spring_layout(G, seed=42)  # Positionnement des nœuds
-nx.draw(G, pos, with_labels=True, node_size=2000, node_color='skyblue', font_size=10, font_weight='bold')
-plt.title('Graphe des élus municipaux de Vourey')
+pos = nx.spring_layout(G_elus, seed=42)  # Positionnement des nœuds
+nx.draw(G_elus, pos, with_labels=True, labels=node_labels, node_size=2000, node_color='skyblue', font_size=10, font_weight='bold')
+plt.title('Graphe des élus municipaux de Riverie')
 plt.show()
-
-
-

@@ -33,17 +33,63 @@ csv_file = extract_csv_elu(url_elus)
 # Filtrage des données pour la ville
 ville_data = csv_file[csv_file['Libellé de la commune'] == ville]
 
-# Crée un graphe dirigé
-G_elu = nx.DiGraph()
+# Fonction pour construire le graphe des élus municipaux
+def build_graph(csv_data):
+    # Initialisation du graphe dirigé
+    G_elu = nx.DiGraph()
+    node_labels = {}
+    edge_labels = {}
+    node_details = {}  # Structure de données pour stocker les informations détaillées de chaque nœud
+    # Compteur pour les identifiants des nœuds
+    node_id_counter = 0
 
-# Ajout des nœuds et des attributs au graphe
-for _, row in ville_data.iterrows():
-    # Nom complet de l'élu
-    nom_prenom = row['Nom de l\'élu'] + ' ' + row['Prénom de l\'élu']
-    # On retire les colonnes inutiles (prenom, nom et libellé de la commune)
-    attributes = row.drop(['Nom de l\'élu', 'Prénom de l\'élu', 'Libellé de la commune'])
-    # On crée un nœud pour l'élu avec ses attributs
-    G_elu.add_node(nom_prenom, **attributes)
+    def add_nodes():
+        # Compteur pour les identifiants des nœuds
+        nonlocal node_id_counter  # Utilisation de la variable externe node_id_counter
+        # Nom complet de l'élu
+        nom_prenom = row['Nom de l\'élu'] + ' ' + row['Prénom de l\'élu']
+
+        # Création de l'identifiant unique du nœud en utilisant le compteur
+        node_id = node_id_counter
+        node_id_counter += 1  # Incrémentation du compteur pour le prochain nœud
+
+        # Ajout du nœud au graphe avec son identifiant unique
+        G_elu.add_node(node_id)
+
+        # Ajout du titre du nœud dans le libellé pour l'affichage du graphe
+        node_labels[node_id] = nom_prenom
+
+        # Ajout des informations détaillées dans la structure de données node_details
+        node_details[node_id] = {
+            'title': nom_prenom,
+            'text': '',
+            'balise': 'tr'
+        }
+
+        # Ajout des attributs de l'élu comme des nœuds de balise 'tr' sous le nœud 'title'
+        for k, v in row.items():
+            attribute_node_id = node_id_counter
+            node_id_counter += 1
+            # Ajout d'un noeud pour chaque attribut de l'élu
+            G_elu.add_node(attribute_node_id)
+            # Ajout du libellé du nœud pour l'affichage du graphe
+            node_labels[attribute_node_id] = f"{k}: {v}"
+            # Ajout d'un lien du nœud 'title' vers le nœud 'tr'
+            G_elu.add_edge(node_id, attribute_node_id)
+            node_details[attribute_node_id] = {
+                'title': k,
+                'text': v,
+                'balise': 'tr'
+            }
+
+    # Ajout des nœuds et des attributs au graphe
+    for _, row in csv_data.iterrows():
+        add_nodes()
+
+    return G_elu, node_labels, edge_labels, node_details
+
+# Construction du graphe des élus municipaux
+G_elu, node_labels, edge_labels, node_details_elus = build_graph(ville_data)
 
 
 #===============================================2ème graphe===================================================
@@ -158,26 +204,50 @@ def build_graph_wiki(sections):
     node_labels = {}
     edge_labels = {}
 
+    # Compteur pour les identifiants des nœuds
+    node_id_counter = 0
+
+    # Structure de données pour stocker les informations détaillées de chaque nœud
+    node_details = {}
+
     # Fonction récursive pour ajouter les nœuds au graphe
     def add_nodes(section, parent_node=None):
-        title = section['title']
-        node = len(G.nodes)
-        G.add_node(node)
+        nonlocal node_id_counter  # Utilisation de la variable externe node_id_counter
 
-        # Ajout du texte du nœud principal dans le libellé du nœud
-        node_labels[node] = title
+        # Récupération des informations de la section
+        title = section['title']
+        text = section['text']
+        balise = section['balise']
+
+        # Création de l'identifiant unique du nœud en utilisant le compteur
+        node_id = node_id_counter
+        node_id_counter += 1  # Incrémentation du compteur pour le prochain nœud
+
+        # Ajout du nœud au graphe avec son identifiant unique
+        G.add_node(node_id)
+
+        # Ajout du titre du nœud dans le libellé pour l'affichage du graphe
+        node_labels[node_id] = title
+
+        # Ajout des informations détaillées dans la structure de données node_details
+        node_details[node_id] = {
+            'title': title,
+            'text': text,
+            'balise': balise
+        }
 
         if parent_node is not None:
-            G.add_edge(parent_node, node)
-            edge_labels[(parent_node, node)] = ''  # Label vide pour l'arc
+            G.add_edge(parent_node, node_id)
+            edge_labels[(parent_node, node_id)] = ''  # Label vide pour l'arc
 
+        # Parcours récursif des enfants du nœud actuel
         for child in section['children']:
-            add_nodes(child, parent_node=node)
+            add_nodes(child, parent_node=node_id)
 
     # Appel initial de la fonction récursive avec la racine des sections
     add_nodes({'title': 'Root', 'text': '', 'balise': 'Root', 'children': sections})
 
-    return G, node_labels, edge_labels
+    return G, node_labels, edge_labels, node_details
 
 # URL de la page Wikipedia à traiter
 url_wikipedia = 'https://fr.wikipedia.org/wiki/' + ville
@@ -186,11 +256,9 @@ url_wikipedia = 'https://fr.wikipedia.org/wiki/' + ville
 sections = extract_sections_recursive(url_wikipedia)
 # On enlève la deuxième section qui est le sommaire et les deux dernières sections qui sont les références et les liens externes tout en gardant la première section qui est l'infobox
 sections = sections[0:1] + sections[2:-2]
-# On enlève les deux dernières sections qui sont les références et les liens externes
-sections = sections[:-2]
 
 # Construction du graphe des sections et sous-sections
-G_wiki, node_labels, edge_labels = build_graph_wiki(sections)
+G_wiki, node_labels, edge_labels, node_details = build_graph_wiki(sections)
 
 
 #===============================================Fusion des deux graphes===================================================
@@ -200,28 +268,53 @@ G_wiki, node_labels, edge_labels = build_graph_wiki(sections)
 G = nx.compose(G_elu, G_wiki)
 
 # Visualisation des données du graphe
-def display_node_data(node, graph, node_labels):
-    # Vérifie si le nœud a du texte
-    if 'text' in node_labels[node]:
-        print(node_labels[node]['text'])
+def display_node_info(G, node_details, node, depth=0):
+    # Récupère les informations du nœud
+    info = node_details[node]
+
+    # Crée une chaîne de caractères pour afficher les informations du nœud
+    if info['balise'] == 'ul':
+        # Ne rien afficher pour la balise 'ul'
+        node_info = ""
+    elif info['balise'] == 'li':
+        # Affiche le texte avec un tiret pour la balise 'li'
+        node_info = f"- {info['text'].strip()}"
+    elif info['balise'] == 'p':
+        # Affiche le texte pour la balise 'p'
+        node_info = info['text'].strip()
+    elif info['balise'] == 'tr':
+        # Affiche le titre suivi du texte pour la balise 'tr'
+        node_info = f"{info['title']}: {info['text'].strip()}"
+    elif info['balise'] in ['h2', 'h3', 'h4', 'h5', 'h6', 'title']:
+        # Affiche le titre pour les balises 'h*' et 'title'
+        node_info = info['title']
+    else:
+        # Utilise le titre par défaut pour les autres balises
+        node_info = f"Title: {info['title']}"
+
+    # Affiche les informations du nœud avec l'indentation correspondante
+    print("    " * depth + node_info)
 
     # Parcours des enfants du nœud
-    for child in graph.successors(node):
-        # Affichage des données du nœud enfant
-        display_node_data(child, graph, node_labels)
+    for child in G.successors(node):
+        # Appel récursif pour afficher les informations de chaque enfant avec une indentation supplémentaire
+        display_node_info(G, node_details, child, depth + 1)
 
-# Appel initial pour afficher les données de chaque nœud
-for node in G.nodes:
-    print("Node:", node)
-    display_node_data(node, G, node_labels)
-    print("============")
+def display_graph_info(G, node_details):
+    # Parcours des nœuds du graphe
+    for node in G.nodes:
+        # Si le nœud n'a pas de prédécesseurs, c'est la racine, on affiche son information et celle de ses enfants
+        if not list(G.predecessors(node)):
+            display_node_info(G, node_details, node)
+
+display_graph_info(G, node_details)
 
 
 
 # Visualisation du graphe
 plt.figure(figsize=(12, 8))
 pos = nx.spring_layout(G)
-nx.draw(G, pos, with_labels=True, labels=node_labels, node_size=1500, node_color='lightblue', font_size=10,
+nx.draw(G, pos, with_labels=True, labels=node_details, node_size=1500, node_color='lightblue', font_size=10,
         font_weight='bold')
 nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
 plt.title('Graphe des élus municipaux et des sections Wikipedia de Moirans')
