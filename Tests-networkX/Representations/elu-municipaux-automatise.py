@@ -61,7 +61,7 @@ def build_graph(csv_data):
         node_details[node_id] = {
             'title': nom_prenom,
             'text': '',
-            'balise': 'tr'
+            'balise': 'title'
         }
 
         # Ajout des attributs de l'élu comme des nœuds de balise 'tr' sous le nœud 'title'
@@ -93,9 +93,11 @@ G_elus, node_labels, edge_labels, node_details_elus = build_graph(ville_data)
 print("Node detail:", node_details_elus.items())
 print("Noeuds et attributs:")
 for node, details in node_details_elus.items():
-    print(f"Noeud {node}: {details['title']}")
-    for k, v in details.items():
-        print(f"    {k}: {v}")
+    # Si c'est un nœud de type 'title', afficher le titre
+    if details['balise'] == 'title':
+        print(details['title'])
+    else:
+        print("        " + details['title'] + ": ", details['text'])
 
 # Dessine le graphe
 plt.figure(figsize=(10, 6))

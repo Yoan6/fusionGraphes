@@ -63,7 +63,7 @@ def build_graph(csv_data):
         node_details[node_id] = {
             'title': nom_prenom,
             'text': '',
-            'balise': 'tr'
+            'balise': 'title'
         }
 
         # Ajout des attributs de l'élu comme des nœuds de balise 'tr' sous le nœud 'title'
