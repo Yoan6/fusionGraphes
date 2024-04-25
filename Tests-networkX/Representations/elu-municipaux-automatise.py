@@ -27,8 +27,10 @@ url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/
 # Extraction des données du fichier CSV
 csv_file = extract_csv(url_elus)
 
+ville = 'Moirans'
+
 # Filtrage des données pour la ville
-ville_data = csv_file[csv_file['Libellé de la commune'] == 'Vourey']
+ville_data = csv_file[csv_file['Libellé de la commune'] == ville]
 
 # Crée un graphe dirigé
 G = nx.DiGraph()
@@ -53,3 +55,6 @@ pos = nx.spring_layout(G, seed=42)  # Positionnement des nœuds
 nx.draw(G, pos, with_labels=True, node_size=2000, node_color='skyblue', font_size=10, font_weight='bold')
 plt.title('Graphe des élus municipaux de Vourey')
 plt.show()
+
+
+
