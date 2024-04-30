@@ -4,6 +4,10 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
+code_commune = '69166'      #Riverie
+# Compteur pour les identifiants des nœuds
+node_id_counter = 0
+
 # Récupère les données du fichier CSV des élus municipaux
 def extract_csv(url):
     # Récupération de la réponse HTTP
@@ -26,24 +30,24 @@ url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/
 # Extraction des données du fichier CSV
 csv_file = extract_csv(url_elus)
 
-ville = 'Riverie'
-
 # Filtrage des données pour la ville
-ville_data = csv_file[csv_file['Libellé de la commune'] == ville]
+ville_data = csv_file[csv_file['Code de la commune'] == code_commune]
 
 # Fonction pour construire le graphe des élus municipaux
 def build_graph(csv_data):
+    # Compteur pour les identifiants des nœuds
+    global node_id_counter  # Utilisation de la variable externe node_id_counter
+
     # Initialisation du graphe dirigé
     G = nx.DiGraph()
     node_labels = {}
     edge_labels = {}
     node_details = {}  # Structure de données pour stocker les informations détaillées de chaque nœud
-    # Compteur pour les identifiants des nœuds
-    node_id_counter = 0
 
     def add_nodes():
         # Compteur pour les identifiants des nœuds
-        nonlocal node_id_counter  # Utilisation de la variable externe node_id_counter
+        global node_id_counter  # Utilisation de la variable externe node_id_counter
+
         # Nom complet de l'élu
         nom_prenom = row['Nom de l\'élu'] + ' ' + row['Prénom de l\'élu']
 
@@ -61,7 +65,7 @@ def build_graph(csv_data):
         node_details[node_id] = {
             'title': nom_prenom,
             'text': '',
-            'balise': 'title'
+            'balise': 'table'
         }
 
         # Ajout des attributs de l'élu comme des nœuds de balise 'tr' sous le nœud 'title'
@@ -79,6 +83,19 @@ def build_graph(csv_data):
                 'text': v,
                 'balise': 'tr'
             }
+        # Ajoute un lien du nœud principal 'Elus municipaux' vers le nœud de l'élu
+        G.add_edge(elus_node_id, node_id)
+
+    # Création du nœud principal 'Elus municipaux'
+    elus_node_id = node_id_counter
+    node_id_counter += 1
+    G.add_node(elus_node_id)
+    node_labels[elus_node_id] = 'Elus municipaux actuel'
+    node_details[elus_node_id] = {
+        'title': 'Elus municipaux actuel',
+        'text': '',
+        'balise': 'h3'
+    }
 
     # Ajout des nœuds et des attributs au graphe
     for _, row in csv_data.iterrows():
@@ -90,11 +107,10 @@ def build_graph(csv_data):
 G_elus, node_labels, edge_labels, node_details_elus = build_graph(ville_data)
 
 # Affiche les nœuds et les attributs du graphe à partir des données de node_details
-print("Node detail:", node_details_elus.items())
 print("Noeuds et attributs:")
 for node, details in node_details_elus.items():
-    # Si c'est un nœud de type 'title', afficher le titre
-    if details['balise'] == 'title':
+    # Si c'est un nœud de type 'table', afficher le titre
+    if details['balise'] == 'table':
         print(details['title'])
     else:
         print("        " + details['title'] + ": ", details['text'])

@@ -4,6 +4,10 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import scipy as sp
 
+
+# Compteur pour les identifiants des nœuds
+node_id_counter = 0
+
 # Nettoie le texte tout en conservant les caractères spéciaux tels que les accents
 def clean_text(text):
     # Remplace les espaces insécables par des espaces normaux
@@ -55,7 +59,7 @@ def extract_sections_recursive(url):
                     if th_text in titles:
                         title = th_text
                         # Crée une nouvelle section pour le titre
-                        current_section = {'title': title, 'text': '', 'balise': 'title', 'children': []}
+                        current_section = {'title': title, 'text': '', 'balise': 'table', 'children': []}
                         infobox_data.append(current_section)
 
         print("Infobox : ", infobox_data)
@@ -115,15 +119,12 @@ def build_graph(sections):
     node_labels = {}
     edge_labels = {}
 
-    # Compteur pour les identifiants des nœuds
-    node_id_counter = 0
-
     # Structure de données pour stocker les informations détaillées de chaque nœud
     node_details = {}
 
     # Fonction récursive pour ajouter les nœuds au graphe
     def add_nodes(section, parent_node=None):
-        nonlocal node_id_counter  # Utilisation de la variable externe node_id_counter
+        global node_id_counter  # Utilisation de la variable externe node_id_counter
 
         # Récupération des informations de la section
         title = section['title']
@@ -196,7 +197,7 @@ def display_node_info(G, node_details, node, depth=0):
     elif info['balise'] == 'tr':
         # Affiche le titre suivi du texte pour la balise 'tr'
         node_info = f"{info['title']}: {info['text'].strip()}"
-    elif info['balise'] in ['h2', 'h3', 'h4', 'h5', 'h6', 'title']:
+    elif info['balise'] in ['h2', 'h3', 'h4', 'h5', 'h6', 'table']:
         # Affiche le titre pour les balises 'h*' et 'title'
         node_info = info['title']
     else:
@@ -211,14 +212,7 @@ def display_node_info(G, node_details, node, depth=0):
         # Appel récursif pour afficher les informations de chaque enfant avec une indentation supplémentaire
         display_node_info(G, node_details, child, depth + 1)
 
-def display_graph_info(G, node_details):
-    # Parcours des nœuds du graphe
-    for node in G.nodes:
-        # Si le nœud n'a pas de prédécesseurs, c'est la racine, on affiche son information et celle de ses enfants
-        if not list(G.predecessors(node)):
-            display_node_info(G, node_details, node)
-
-display_graph_info(G, node_details)
+display_node_info(G, node_details, 0)
 
 # Visualisation du graphe
 plt.figure(figsize=(12, 8))
