@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 
-ville = 'Moirans'
+ville = 'Riverie'
 
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
