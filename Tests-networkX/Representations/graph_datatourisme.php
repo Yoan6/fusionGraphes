@@ -11,6 +11,17 @@ $result = $api->process('
       poi (
         from: 0,
         size: 20,
+        filters: [
+          {
+            isLocatedAt: {
+              schema_address: {
+                schema_postalCode: {
+                  _eq: "38430"
+                }
+              }
+            }
+          }
+        ]
       ) 
       {
         total

@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 
 ville = 'Riverie'      # TODO A changer pour prendre en compte le code de la commune
+
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
 
