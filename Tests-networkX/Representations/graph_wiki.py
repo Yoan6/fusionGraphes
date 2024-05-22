@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Ville
-ville = "Villeconin"
+ville = "Mens"
 
 # Initialisation du compteur de nœuds
 node_id_counter = 0
@@ -15,14 +15,16 @@ def clean_text(text):
 
 # Fonction pour extraire les sections récursivement à partir d'une URL donnée
 def extract_sections_recursive(url):
-    global node_id_counter  # Utilisation de la variable globale node_id_counter
     # Récupération de la réponse HTTP
     response = requests.get(url)
     # Analyse du contenu HTML de la page
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Initialisation du nœud racine
-    root = {'title': 'Root', 'text': '', 'balise': 'Root', 'children': []}
+    # Extraction du titre de la page à partir de la balise <h1>
+    page_title = soup.find('h1').text.strip()
+
+    # Initialisation du nœud racine avec le titre de la page
+    root = {'title': page_title, 'text': '', 'balise': 'h1', 'children': []}
     parents = [root]
 
     # Création de la section pour l'infobox
@@ -38,7 +40,7 @@ def extract_sections_recursive(url):
     for tag in soup.find_all(['h2', 'h3', 'h4', 'h5', 'h6']):
         # Appel de la fonction pour traiter chaque section
         process_section(tag, parents)
-    return root['children']
+    return root
 
 # Fonction pour extraire les données de l'infobox
 def extract_infobox_data(infobox):
@@ -73,7 +75,7 @@ def process_section(tag, parents):
     title = clean_text(tag.text.strip().split('[')[0])
 
     # Déplacement dans la hiérarchie des sections si un niveau inférieur est rencontré
-    while (len(parents) >= level):
+    while len(parents) >= level:
         parents.pop()
 
     # Création d'un nouveau nœud pour la section avec la balise associée
@@ -84,11 +86,11 @@ def process_section(tag, parents):
 
     # Récupération du texte directement sous la balise h*
     current_tag = tag.find_next_sibling()
-    while (current_tag and current_tag.name not in ['h2', 'h3', 'h4', 'h5', 'h6']):
-        if (current_tag.name == 'p'):
+    while current_tag and current_tag.name not in ['h2', 'h3', 'h4', 'h5', 'h6']:
+        if current_tag.name == 'p':
             # Création d'un nouveau nœud pour chaque balise <p>
             new_node['children'].append({'title': 'Paragraph', 'text': clean_text(current_tag.get_text().strip()), 'balise': 'p', 'children': []})
-        elif (current_tag.name == 'ul'):
+        elif current_tag.name == 'ul':
             # Création d'un nouveau nœud pour la balise <ul> et ses <li>
             ul_node = {'title': 'Unordered List', 'text': '', 'balise': 'ul', 'children': [{'title': 'List Item', 'text': clean_text(li.get_text().strip()), 'balise': 'li', 'children': []} for li in current_tag.find_all('li')]}
             new_node['children'].append(ul_node)
@@ -121,7 +123,7 @@ def build_graph(sections):
             add_nodes(child, parent_node=node_id)
 
     # Appel initial de la fonction récursive avec la racine des sections
-    add_nodes({'title': 'Root', 'text': '', 'balise': 'Root', 'children': sections})
+    add_nodes(sections)
     return G, node_labels, edge_labels
 
 # URL de la page Wikipedia à traiter
@@ -129,45 +131,49 @@ url_wikipedia = 'https://fr.wikipedia.org/wiki/' + ville
 
 # Extraction des sections récursivement à partir de l'URL donnée
 sections = extract_sections_recursive(url_wikipedia)
-# On enlève la deuxième section qui est le sommaire et les deux dernières sections qui sont les références et les liens externes tout en gardant la première section qui est l'infobox
-sections = sections[0:1] + sections[2:-2]
 
-# Construction du graphe des sections et sous-sections
-G, node_labels, edge_labels = build_graph(sections)
+if len(sections['children']) > 1:
+    # On enlève la deuxième section qui est le sommaire et les deux dernières sections qui sont les références et les liens externes tout en gardant la première section qui est l'infobox
+    sections['children'] = sections['children'][0:1] + sections['children'][2:-2]
 
-print("Noeuds et arêtes du graphe:")
-print("Noeuds:", G.nodes(data=True))  # Affiche les nœuds avec leurs attributs
-print("Arêtes:", G.edges())
+    # Construction du graphe des sections et sous-sections
+    G, node_labels, edge_labels = build_graph(sections)
 
-# Fonction pour afficher les informations d'un nœud et de ses enfants
-def display_node_info(G, node, depth=0):
-    # Récupère les informations du nœud
-    info = G.nodes[node]
-    # Crée une chaîne de caractères pour afficher les informations du nœud
-    if (info['balise'] == 'ul'):
-        node_info = ""
-    elif (info['balise'] == 'li'):
-        node_info = f"- {info['text'].strip()}"
-    elif (info['balise'] == 'p'):
-        node_info = info['text'].strip()
-    elif (info['balise'] == 'tr'):
-        node_info = f"{info['title']}: {info['text'].strip()}"
-    else:
-        node_info = info['title']
-    # Affiche les informations du nœud avec l'indentation correspondante
-    print("    " * depth + node_info)
-    # Parcours des enfants du nœud
-    for child in G.successors(node):
-        display_node_info(G, child, depth + 1)
+    print("Noeuds et arêtes du graphe:")
+    print("Noeuds:", G.nodes(data=True))  # Affiche les nœuds avec leurs attributs
+    print("Arêtes:", G.edges())
 
-# Affichage des informations des nœuds et de leurs enfants
-display_node_info(G, 0)
+    # Fonction pour afficher les informations d'un nœud et de ses enfants
+    def display_node_info(G, node, depth=0):
+        # Récupère les informations du nœud
+        info = G.nodes[node]
+        # Crée une chaîne de caractères pour afficher les informations du nœud
+        if (info['balise'] == 'ul'):
+            node_info = ""
+        elif (info['balise'] == 'li'):
+            node_info = f"- {info['text'].strip()}"
+        elif (info['balise'] == 'p'):
+            node_info = info['text'].strip()
+        elif (info['balise'] == 'tr'):
+            node_info = f"{info['title']}: {info['text'].strip()}"
+        else:
+            node_info = info['title']
+        # Affiche les informations du nœud avec l'indentation correspondante
+        print("    " * depth + node_info)
+        # Parcours des enfants du nœud
+        for child in G.successors(node):
+            display_node_info(G, child, depth + 1)
 
-# Visualisation du graphe
-plt.figure(figsize=(12, 8))
-pos = nx.spring_layout(G)
-nx.draw(G, pos, with_labels=True, labels=node_labels, node_size=1500, node_color='lightblue', font_size=10,
-        font_weight='bold')
-nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
-plt.title('Graphe des sections et sous-sections de la page Wikipedia sur Villeconin')
-plt.show()
+    # Affichage des informations des nœuds et de leurs enfants
+    display_node_info(G, 0)
+
+    # Visualisation du graphe
+    plt.figure(figsize=(12, 8))
+    pos = nx.spring_layout(G)
+    nx.draw(G, pos, with_labels=True, labels=node_labels, node_size=1500, node_color='lightblue', font_size=10,
+            font_weight='bold')
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
+    plt.title(f'Graphe des sections et sous-sections de la page Wikipedia sur {ville}')
+    plt.show()
+else:
+    print(f"Aucune section trouvée pour la page Wikipedia de {ville}")
