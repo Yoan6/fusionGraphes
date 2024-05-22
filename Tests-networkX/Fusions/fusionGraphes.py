@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
+import json
 
 ville = 'Mens'
 
@@ -385,6 +386,26 @@ else:
 #===============================================Fusion des graphes===================================================
 
 #============Fusion entre le Wikipédia et celui du répertoire des élus municipaux==============
+
+# Fonction pour ajouter les fils d'un noeud d'un graphe à un autre graphe en gardant toute l'arborecence
+def add_nodes_recursive(graph, other_graph, node_id, parent_id=None):
+    # Récupération des informations du nœud
+    info = other_graph.nodes[node_id]
+
+    # Ajout du nœud au graphe avec ses attributs
+    graph.add_node(node_id, **info)
+    # Ajout du libellé du nœud pour l'affichage du graphe
+    node_labels[node_id] = info['title']
+
+    # Ajout de l'arc entre le nœud parent et le nœud actuel
+    if parent_id is not None:
+        graph.add_edge(parent_id, node_id)
+
+    # Parcours récursif des enfants du nœud actuel
+    for child_id in other_graph.successors(node_id):
+        add_nodes_recursive(graph, other_graph, child_id, parent_id=node_id)
+
+
 G = nx.DiGraph()
 
 if is_wikipedia_found and is_elus_found:
@@ -406,23 +427,8 @@ if is_wikipedia_found and is_elus_found:
 
             # Vérification si le nœud "Elus municipaux" a été trouvé
             if elus_node_id is not None:
-                # Ajout du nœud "Elus municipaux" dans le graphe final
-                G.add_node(elus_node_id, **G_elu.nodes[elus_node_id])
-                # Ajout de l'arc entre "Politique et administration" et "Elus municipaux"
-                G.add_edge(politique_node_wiki, elus_node_id)
-                edge_labels[(politique_node_wiki, elus_node_id)] = ''
-
-                # Ajout des enfants de "Elus municipaux" comme enfants de "Elus municipaux" dans le graphe final
-                descendants = nx.descendants(G_elu, elus_node_id)
-                for descendant in descendants:
-                    # Ajout des descendants directs de "Elus municipaux" comme enfants de "Elus municipaux" dans le graphe final
-                    if descendant not in G.nodes:
-                        # Si le descendant n'existe pas encore dans le graphe final, l'ajouter avec les mêmes attributs
-                        G.add_node(descendant, **G_elu.nodes[descendant])
-                        node_labels[descendant] = G_elu.nodes[descendant]['title']
-                        # Ajoute un arc entre "Elus municipaux" et le descendant
-                        G.add_edge(elus_node_id, descendant)
-                        edge_labels[(elus_node_id, descendant)] = ''
+                # Ajout du nœud "Elus municipaux" et de ses enfants dans le graphe final
+                add_nodes_recursive(G, G_elu, elus_node_id, parent_id=politique_node_wiki)
 
 
 #============Fusion entre le graphe fusionné et les deux graphes de dataTourisme (économique et culturel)==============
@@ -474,12 +480,8 @@ if is_datatourisme_found:
                 del node_labels[target_node_id_fusion]
 
             # Ajout des enfants du nœud cible dans le graphe fusionné
-            descendants = nx.descendants(target_graph, target_node_id_tourisme)
-            for descendant in descendants:
-                if descendant not in G.nodes:
-                    G.add_node(descendant, **target_graph.nodes[descendant])
-                    node_labels[descendant] = target_graph.nodes[descendant]['title']
-                    G.add_edge(target_node_id_fusion, descendant)
+            for child in target_graph.successors(target_node_id_tourisme):
+                add_nodes_recursive(G, target_graph, child, parent_id=target_node_id_fusion)
 
 if is_datatourisme_found or is_wikipedia_found or is_elus_found:
     # Visualisation des données du graphe
@@ -524,10 +526,18 @@ if is_datatourisme_found or is_wikipedia_found or is_elus_found:
 
 
     # Visualisation du graphe
-    plt.figure(figsize=(12, 8))
-    pos = nx.spring_layout(G)
-    nx.draw(G, pos, with_labels=True, labels=node_labels, node_size=1500, node_color='lightblue', font_size=10,
-            font_weight='bold')
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
-    plt.title('Graphe final fusionné')
-    plt.show()
+    # plt.figure(figsize=(12, 8))
+    # pos = nx.spring_layout(G)
+    # nx.draw(G, pos, with_labels=True, labels=node_labels, node_size=1500, node_color='lightblue', font_size=10,
+    #         font_weight='bold')
+    # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
+    # plt.title('Graphe final fusionné')
+    # plt.show()
+
+
+    # Conversion du graphe en dictionnaire JSON
+    data = nx.readwrite.json_graph.tree_data(G, root=0)
+
+    # Enregistrement du graphe fusionné en JSON
+    with open('graph_data.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)

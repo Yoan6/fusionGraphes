@@ -20,11 +20,16 @@ Pour créer un graphe dirigé il faut l'initialiser comme cela :
 G = nx.DiGraph()
 ```
 
-Pour ajouter un noeud il faut utiliser la fonction add_node avec un id comme cela : 
+Pour ajouter un noeud il faut utiliser la fonction add_node avec un id et les attributs du noeud comme cela : 
 
 ```python
-G.add_node(node_id)
+G.add_node(node_id, title="Titre du noeud", text="Texte du noeud", balise="h3")
 ```
+
+Un noeud a toujours les trois mêmes attributs :
+- title : le titre du noeud (par exemple le titre d'une page ou d'un titre de section)
+- text : le texte du noeud (par exemple le texte d'un paragraphe)
+- balise : la balise du noeud (par exemple h1, h2, h3, p, ul, li, etc)
 
 Pour ajouter un arc entre deux noeud il faut indiquer de quel id de noeud part cet arc et à quel id de noeud il est relié. Exemple avec un noeud parent et un noeud actuel : 
 
@@ -34,21 +39,11 @@ G.add_edge(parent_node, node_id)
 
 ### Affichage d'un graphe
 
-Pour chacun des graphes il faut utiliser une liste 'node_labels' mentionnant les labels des noeuds à partir de leur id de noeud.
+Pour chacun des graphes il faut utiliser une liste 'node_labels' mentionnant les labels des noeuds à partir de leur id de noeud. Cette liste permet d'afficher les labels des noeuds pour l'affichage du graphe :
 
 ```python
 # Ajout du titre du nœud dans le libellé pour l'affichage du graphe
 node_labels[node_id] = "Pierre"
-```
-
-**Remarque** : la liste node_labels associe seulement un label à un id de noeud, pour avoir les détails d'un noeud il faut créer une autre liste node_details qui associe un dictionnaire d'attribut à un id de noeud. Exemple : 
-
-``` python
-node_details[node_id] = {
-    'title': title,
-    'text': text,
-    'balise': balise
-}
 ```
 
 Chacun des noeuds a un id unique qui est généré grâce à une variable 'node_id_compteur' qu'il faut incrémenter après chaque attribution à un noeud :
@@ -56,7 +51,7 @@ Chacun des noeuds a un id unique qui est généré grâce à une variable 'node_
 ```python
 global node_id_counter
 node_id = node_id_compteur
-G.add_node(node_id)
+G.add_node(node_id, title="Pierre", text="Texte du noeud", balise="h3")
 node_id_compteur += 1
 
 ```
@@ -139,7 +134,7 @@ Ensuite, il y a une fonction **build_graph()** qui permet de créer un graphe à
 **Remarque** : avant de faire l'appel à la fonction build_graph() il faut supprimer quelques sections inintéressantes comme le sommaires, les références, etc : 
 
 ```python
-sections = sections[0:1] + sections[2:-2]
+sections['children'] = sections['children'][0:1] + sections['children'][2:-2]
 ```
 
 ## Création de graphe pour le répertoire nationnal des élus municipaux
