@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import json
 
-ville = 'Mens'
+ville = 'Cras'
+departement = 'Isère'
 
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
@@ -139,6 +140,20 @@ def build_graph_wiki(sections):
 
 # URL de la page Wikipedia à traiter
 url_wikipedia = 'https://fr.wikipedia.org/wiki/' + ville
+url_wikipedia_toponyme = 'https://fr.wikipedia.org/wiki/' + ville + '_(' + departement + ')'
+
+# Fonction pour vérifier si une page Wikipedia contient des toponymes
+def has_toponymes(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    # Si la deuxième balise h2 est 'Toponyme' en enlevant toute la partie [modifier le code], alors la page contient des toponymes
+    h2_tags = soup.find_all('h2')
+    if len(h2_tags) > 1:
+        h2_tag = h2_tags[1]
+        return 'Toponyme' in h2_tag.text.split('[')[0]
+
+if has_toponymes(url_wikipedia):
+    url_wikipedia = url_wikipedia_toponyme
 
 # Extraction des sections récursivement à partir de l'URL donnée
 sections = extract_sections_recursive(url_wikipedia)
