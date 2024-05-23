@@ -7,6 +7,7 @@ import json
 
 ville = 'Cras'
 departement = 'Isère'
+code_commune = '38137'
 
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
@@ -193,8 +194,8 @@ url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/
 # Extraction des données du fichier CSV
 csv_file = extract_csv(url_elus)
 
-# Filtrage des données pour la ville
-ville_data = csv_file[csv_file['Libellé de la commune'] == ville]
+# Filtrage des données pour la ville en fonction du nom de la ville et du code de la commune
+ville_data = csv_file[(csv_file['Libellé de la commune'] == ville) & (csv_file['Code de la commune'] == code_commune)]
 
 if len(ville_data) != 0:
     is_elus_found = True

@@ -4,7 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-ville = 'Villeconin'      # Ville pour laquelle nous extrayons les données
+ville = 'Cras'      # Ville pour laquelle on extraie les données
+code_commune = '38137'      # Code de la commune
 
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
@@ -31,8 +32,8 @@ url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/
 # Extraction des données du fichier CSV
 csv_file = extract_csv(url_elus)
 
-# Filtrage des données pour la ville
-ville_data = csv_file[csv_file['Libellé de la commune'] == ville]
+# Filtrage des données pour la ville en fonction du nom de la ville et du code de la commune
+ville_data = csv_file[(csv_file['Libellé de la commune'] == ville) & (csv_file['Code de la commune'] == code_commune)]
 
 if len(ville_data) != 0:
     # Fonction pour construire le graphe des élus municipaux
@@ -104,7 +105,7 @@ if len(ville_data) != 0:
     pos = nx.spring_layout(G_elus, seed=42)  # Positionnement des nœuds
     nx.draw(G_elus, pos, with_labels=True, labels=node_labels, node_size=1500, node_color='skyblue', font_size=10, font_weight='bold')
     nx.draw_networkx_edge_labels(G_elus, pos, edge_labels=edge_labels, font_color='red')
-    plt.title('Graphe des élus municipaux de Riverie')
+    plt.title('Graphe des élus municipaux')
     plt.show()
 else:
     print(f"Aucun élu municipal trouvé pour la ville de {ville}")
