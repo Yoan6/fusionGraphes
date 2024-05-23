@@ -50,6 +50,10 @@ form input {
   background-color: lightgrey;
 }
 
+#search section {
+  margin-top: 20px;
+}
+
 #search ul {
   position: absolute;
   top: 100%; /* Positionne sous l'input */
