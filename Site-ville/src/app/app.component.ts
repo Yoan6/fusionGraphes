@@ -9,7 +9,7 @@ import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operato
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title: string = 'Site de votre ville';
+  title: string = 'Site d\'information des villes de France';
   city: string = '';
   showGraph: boolean = false;
   private searchTerms = new Subject<string>();
@@ -25,10 +25,13 @@ export class AppComponent implements OnInit {
       debounceTime(100), // Attendre 100ms après chaque frappe avant de lancer la recherche
       distinctUntilChanged(), // Ignorer le terme de recherche si c'est le même que le précédent
       switchMap((term: string) => this.cityService.searchCities(term).pipe(
-        tap(cities => this.citiesList = cities) // Stockage des résultats de la recherche
+        tap(
+          cities => {
+            this.citiesList = cities;
+          }
+        ) // Stockage des résultats de la recherche
       ))
     );
-
     this.cities$.subscribe();
   }
 
@@ -59,7 +62,6 @@ export class AppComponent implements OnInit {
       this.citiesList = [];
       return;
     }
-
     this.showGraph = true;
   }
 }

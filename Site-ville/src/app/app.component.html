@@ -8,7 +8,7 @@
         <button type="submit">Rechercher</button>
         <ul *ngIf="citiesList.length > 0">
           <li *ngFor="let city of citiesList" (click)="selectCity(city.nom)">
-            {{ city.nom }} ({{ city.code }})
+            {{ city.nom }} ({{ city.departement.nom }})
           </li>
         </ul>
         <section *ngIf="noCitySelected && !city" class="error">Veuillez sélectionner une ville</section>

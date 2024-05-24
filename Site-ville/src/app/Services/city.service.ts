@@ -14,7 +14,7 @@ export class CityService {
 
   // Fonction de recherche des villes pour l'autocomplétion
   searchCities(name: string): Observable<any> {
-    const url = `${this.apiUrl}?nom=${name}&fields=nom, code&boost=population&limit=5`;
+    const url = `${this.apiUrl}?nom=${name}&fields=nom,departement,code&boost=population&limit=5`;
     return this.http.get<any[]>(url);
   }
 

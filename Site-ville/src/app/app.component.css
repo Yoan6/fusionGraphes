@@ -1,5 +1,5 @@
 #body {
-  background-image: url('../assets/commune_france.jpg');
+  background-image: url('../assets/images/commune_france.jpg');
   background-size: cover; /* Redimensionne l'image pour couvrir le conteneur */
   background-attachment: fixed; /* Fige l'image de fond */
   height: 100%;
@@ -59,7 +59,7 @@ form input {
   top: 100%; /* Positionne sous l'input */
   left: 0;
   right: 0;
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
   background-color: white;
   border: 1px solid #ccc;
