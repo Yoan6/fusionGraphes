@@ -11,6 +11,7 @@ import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operato
 export class AppComponent implements OnInit {
   title: string = 'Site d\'information des villes de France';
   city: string = '';
+  selectedCity: any = null;  // Variable pour stocker la ville sélectionnée
   showGraph: boolean = false;
   private searchTerms = new Subject<string>();
   cities$: Observable<any[]> = new Observable<any[]>();
@@ -25,11 +26,14 @@ export class AppComponent implements OnInit {
       debounceTime(100), // Attendre 100ms après chaque frappe avant de lancer la recherche
       distinctUntilChanged(), // Ignorer le terme de recherche si c'est le même que le précédent
       switchMap((term: string) => this.cityService.searchCities(term).pipe(
-        tap(
-          cities => {
-            this.citiesList = cities;
+        tap(cities => {
+          this.citiesList = cities;
+          if (cities.length === 0) {
+            this.noCityFound = true;
+          } else {
+            this.noCityFound = false;
           }
-        ) // Stockage des résultats de la recherche
+        })
       ))
     );
     this.cities$.subscribe();
@@ -40,11 +44,13 @@ export class AppComponent implements OnInit {
     this.searchTerms.next(term);
     this.noCitySelected = false;
     this.noCityFound = false;
+    this.selectedCity = null;  // Réinitialisation la ville sélectionnée lors d'une' nouvelle recherche
   }
 
   // Fonction de sélection d'une ville
-  selectCity(cityName: string): void {
-    this.city = cityName;
+  selectCity(city: any): void {
+    this.city = city.nom;
+    this.selectedCity = city;  // Enregistrement de la ville sélectionnée
     this.citiesList = [];
   }
 
@@ -57,11 +63,12 @@ export class AppComponent implements OnInit {
     }
 
     // On vérifie que la ville sélectionnée existe
-    if (!this.cityService.cityExists(this.city, this.citiesList)) {
+    if (!this.selectedCity || !this.cityService.cityExists(this.city, [this.selectedCity])) {
       this.noCityFound = true;
-      this.citiesList = [];
+      this.citiesList = [];  // Vider la liste des villes si aucune ville n'est trouvée
       return;
     }
+
     this.showGraph = true;
   }
 }

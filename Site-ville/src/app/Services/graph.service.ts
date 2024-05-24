@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class GraphService {
 
   // Url du fichier json des données du graphe
-  private url = '../../../../../Fusions/graph_data.json';
+  private url = 'assets/graph_data.json';
 
   constructor(
     private http: HttpClient

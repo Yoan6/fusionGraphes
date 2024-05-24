@@ -1,5 +1,5 @@
 <div id="body">
-  <h1 *ngIf="!showGraph">{{ title }}</h1>
+  <h1 *ngIf="!showGraph">Site de recherche d'information des villes de France</h1>
   <div *ngIf="!showGraph" class="container-search">
     <div id="search">
       <p>Recherchez une ville pour obtenir des informations sur celle-ci</p>
@@ -7,7 +7,7 @@
         <input type="text" [(ngModel)]="city" name="city" (input)="search(city)" placeholder="Entrez un nom de ville" required autocomplete="off">
         <button type="submit">Rechercher</button>
         <ul *ngIf="citiesList.length > 0">
-          <li *ngFor="let city of citiesList" (click)="selectCity(city.nom)">
+          <li *ngFor="let city of citiesList" (click)="selectCity(city)">
             {{ city.nom }} ({{ city.departement.nom }})
           </li>
         </ul>

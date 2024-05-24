@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import json
 
-ville = 'Cras'
+ville = 'Mens'
 departement = 'Isère'
-code_commune = '38137'
+code_commune = '38226'
 
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
@@ -550,10 +550,11 @@ if is_datatourisme_found or is_wikipedia_found or is_elus_found:
     # plt.title('Graphe final fusionné')
     # plt.show()
 
+    json_file_path = '../Site-ville/src/assets/graph_data.json'
 
     # Conversion du graphe en dictionnaire JSON
     data = nx.readwrite.json_graph.tree_data(G, root=0)
 
     # Enregistrement du graphe fusionné en JSON
-    with open('graph_data.json', 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    with open(json_file_path, 'w', encoding='utf-8') as json_file:
+        json.dump(data, json_file, ensure_ascii=False, indent=4)
