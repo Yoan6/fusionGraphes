@@ -4,11 +4,12 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-ville = 'Cras'      # Ville pour laquelle on extraie les données
-code_commune = '38137'      # Code de la commune
+ville = 'Mens'  # Ville pour laquelle on extraie les données
+code_commune = '38226'  # Code de la commune
 
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
+
 
 # Récupère les données du fichier CSV des élus municipaux
 def extract_csv(url):
@@ -25,6 +26,7 @@ def extract_csv(url):
     # On charge le fichier CSV dans un DataFrame
     data = pd.read_csv(download_link, dtype=str, sep=';', encoding='utf-8')
     return data
+
 
 # URL du site des élus à traiter
 url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/'
@@ -68,7 +70,7 @@ if len(ville_data) != 0:
                 attribute_node_id = node_id_counter
                 node_id_counter += 1
                 # Ajout d'un noeud pour chaque attribut de l'élu
-                G.add_node(attribute_node_id, title=k, text=v, balise='tr')
+                G.add_node(attribute_node_id, title=k, text=str(v), balise='tr')
                 # Ajout du libellé du nœud pour l'affichage du graphe
                 node_labels[attribute_node_id] = f"{k}: {v}"
                 # Ajout d'un lien du nœud 'table' vers le nœud 'tr'
@@ -88,6 +90,7 @@ if len(ville_data) != 0:
 
         return G, node_labels, edge_labels
 
+
     # Construction du graphe des élus municipaux
     G_elus, node_labels, edge_labels = build_graph(ville_data)
 
@@ -98,12 +101,13 @@ if len(ville_data) != 0:
         if G_elus.nodes[node_id]['balise'] == 'table':
             print(G_elus.nodes[node_id]['title'])
         else:
-            print("        " + G_elus.nodes[node_id]['title']), " : ", G_elus.nodes[node_id]['text']
+            print("        " + G_elus.nodes[node_id]['title'] + " : " + G_elus.nodes[node_id]['text'])
 
     # Dessine le graphe
     plt.figure(figsize=(10, 6))
     pos = nx.spring_layout(G_elus, seed=42)  # Positionnement des nœuds
-    nx.draw(G_elus, pos, with_labels=True, labels=node_labels, node_size=1500, node_color='skyblue', font_size=10, font_weight='bold')
+    nx.draw(G_elus, pos, with_labels=True, labels=node_labels, node_size=1500, node_color='skyblue', font_size=10,
+            font_weight='bold')
     nx.draw_networkx_edge_labels(G_elus, pos, edge_labels=edge_labels, font_color='red')
     plt.title('Graphe des élus municipaux')
     plt.show()
