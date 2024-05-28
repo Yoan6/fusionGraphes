@@ -24,6 +24,7 @@ export class AppComponent implements OnInit {
   noCitySelected: boolean = false;
   noCityFound: boolean = false;
   graphData: any = null;
+  loading: boolean = false;
 
   constructor(
     private cityService: CityService,
@@ -80,10 +81,13 @@ export class AppComponent implements OnInit {
       return;
     }
 
+    this.loading = true;
+
     // On lance le script de génération du graphe
     this.graphService.extract(this.city, this.code_commune, this.departement).subscribe(response => {
       if (response.status === 'success') {
         console.log('Graphe généré avec succès !', response);
+        this.loading = false;
         this.graphData = response.data;
         this.showGraph = true;
       } else {
@@ -91,6 +95,7 @@ export class AppComponent implements OnInit {
       }
     }, error => {
       console.log('Erreur lors de la génération du graphe : ', error);
+      this.loading = false;
     });
   }
 
@@ -113,4 +118,5 @@ export class AppComponent implements OnInit {
       console.log('Erreur lors de l\'exportation du site', error);
     });
   }*/
+  protected readonly blur = blur;
 }

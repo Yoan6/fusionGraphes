@@ -1,11 +1,11 @@
 <div id="body">
-  <h1 *ngIf="!showGraph">Site de recherche d'information des villes de France</h1>
-  <div *ngIf="!showGraph" class="container-search">
+  <h1 *ngIf="!showGraph" [ngClass]="{'blur' : loading}">Site de recherche d'information des villes de France</h1>
+  <div *ngIf="!showGraph" [ngClass]="{'blur' : loading}" class="container-search">
     <div id="search">
       <p>Recherchez une ville pour obtenir des informations sur celle-ci</p>
       <form (ngSubmit)="onSubmit()">
         <input type="text" [(ngModel)]="city" name="city" (input)="search(city)" placeholder="Entrez un nom de ville" required autocomplete="off">
-        <button type="submit">Rechercher</button>
+        <button type="submit" [disabled]="loading" [ngClass]="{'loading-button': loading}">Rechercher</button>
         <ul *ngIf="citiesList.length > 0">
           <li *ngFor="let city of citiesList" (click)="selectCity(city)">
             {{ city.nom }} ({{ city.departement.nom }})
@@ -15,6 +15,10 @@
         <section *ngIf="noCityFound && city" class="error">Aucune ville trouvée</section>
       </form>
     </div>
+  </div>
+
+  <div *ngIf="loading">
+    <img src="assets/images/chargement.gif" alt="Chargement en cours" class="loading"/>
   </div>
 
   <!--<app-graph-display *ngIf="showGraph"></app-graph-display>-->
