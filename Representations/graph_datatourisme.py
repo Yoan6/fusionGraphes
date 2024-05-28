@@ -4,7 +4,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Ville à rechercher
-ville = "Mens"  # TODO: Modifier pour prendre en compte le code de la commune (objet['isLocatedAt']['schema:address']['hasAddressCity']['@id'][3:])
+ville = "Cras"
+code_commune = "38137"  # Code de la commune de Cras
 
 # Compteur pour les identifiants des nœuds
 global node_id_counter
@@ -24,18 +25,19 @@ url = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e
 data = extract_data_tourisme(url)
 
 # Fonction pour filtrer les données pour la ville donnée
-def filter_data_tourisme(data, ville):
+def filter_data_tourisme(data, ville, code_commune):
     etablissements_ville_recherchee = []
     # Parcourt chaque objet dans le fichier JSON-LD
     for objet in data['@graph']:
         if 'isLocatedAt' in objet and 'schema:address' in objet['isLocatedAt'] and 'schema:addressLocality' in objet['isLocatedAt']['schema:address']:
-            ville_etablissement = objet['isLocatedAt']['schema:address']['schema:addressLocality']      # TODO: Modifier pour prendre en compte le code de la commune : objet['isLocatedAt']['schema:address']['hasAddressCity']['@id'][3:]
-            if ville == ville_etablissement:
+            ville_etablissement = objet['isLocatedAt']['schema:address']['schema:addressLocality']
+            code_commune_etablissement = objet['isLocatedAt']['schema:address']['hasAddressCity']['@id'][3:]
+            if ville == ville_etablissement and code_commune == code_commune_etablissement:
                 etablissements_ville_recherchee.append(objet)
     return etablissements_ville_recherchee
 
 # Filtrage des données pour la ville donnée
-etablissements_ville_recherchee = filter_data_tourisme(data, ville)
+etablissements_ville_recherchee = filter_data_tourisme(data, ville, code_commune)
 
 # Si aucun établissement n'est trouvé pour la ville recherchée, ne rien faire
 if etablissements_ville_recherchee:

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import json
 
-def run(ville='Mens', departement='Isère', code_commune='38226'):
+def run(ville, departement, code_commune):
     ville = ville
     departement = departement
     code_commune = code_commune
@@ -276,19 +276,20 @@ def run(ville='Mens', departement='Isère', code_commune='38226'):
     data = extract_dataTourisme(url_dataTourisme)
 
     # Fonction pour filtrer les données pour la ville
-    def filter_dataTourisme(data, ville):
+    def filter_dataTourisme(data, ville, code_commune):
         etablissements_ville_recherchee = []
         # Parcourt chaque objet dans le fichier JSON-LD
         for objet in data['@graph']:
             if 'isLocatedAt' in objet and 'schema:address' in objet['isLocatedAt'] and 'schema:addressLocality' in \
                     objet['isLocatedAt']['schema:address']:
-                ville_etablissement = objet['isLocatedAt']['schema:address']['schema:addressLocality']      # TODO A changer pour prendre en compte le code de la commune : objet['isLocatedAt']['schema:address']['hasAddressCity']['@id'][3:]
+                ville_etablissement = objet['isLocatedAt']['schema:address']['schema:addressLocality']
+                code_commune_etablissement = objet['isLocatedAt']['schema:address']['hasAddressCity']['@id'][3:]
                 if ville == ville_etablissement:
                     etablissements_ville_recherchee.append(objet)
         return etablissements_ville_recherchee
 
     # Filtrage des données pour la ville
-    etablissements_ville_recherchee = filter_dataTourisme(data, ville)
+    etablissements_ville_recherchee = filter_dataTourisme(data, ville, code_commune)
 
     if etablissements_ville_recherchee:
         is_datatourisme_found = True
