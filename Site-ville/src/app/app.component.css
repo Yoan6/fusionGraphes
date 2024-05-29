@@ -1,4 +1,4 @@
-#body {
+.body {
   background-image: url('../assets/images/commune_france.jpg');
   background-size: cover; /* Redimensionne l'image pour couvrir le conteneur */
   background-attachment: fixed; /* Fige l'image de fond */
@@ -6,6 +6,12 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+}
+
+/*Affichage du graphe*/
+.invisible {
+  background-color: white;
+  padding: 30px;
 }
 
 .blur {

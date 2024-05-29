@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 
 @Component({
   selector: 'app-graph-display',
@@ -16,28 +16,71 @@ export class GraphDisplayComponent implements OnChanges {
     }
   }
 
+  // Génère le code HTML à partir des données du graphe
   generateHTMLContent() {
-    const nodes = this.graphData.nodes;
-    const edges = this.graphData.links;
-    const nodeMap = new Map();
+    if (!this.graphData) return;
 
-    nodes.forEach((node: { id: any; }) => nodeMap.set(node.id, node));
+    let element = this.graphData;
 
-    const rootNode = nodes.find((node: { id: any; }) => !edges.some((edge: { target: any; }) => edge.target === node.id));
-
-    this.htmlContent = this.createHTMLElement(rootNode, nodeMap, edges);
+    this.htmlContent = this.createHTMLElementRecursive(element);
   }
 
-  createHTMLElement(node: { balise: any; text: any; id: any; }, nodeMap: Map<any, any>, edges: any[]): string {
-    let element = `<${node.balise}>${node.text || ''}`;
+  // Parcourt des éléments du graphe pour générer le code HTML en fonction des balises
+  createHTMLElementRecursive(element: any) {
+    let html = '';
 
-    const children = edges.filter(edge => edge.source === node.id).map(edge => nodeMap.get(edge.target));
+    // Si il n'y a plus d'élément, on retourne le code HTML
+    if (!element) return html;
 
-    children.forEach(child => {
-      element += this.createHTMLElement(child, nodeMap, edges);
-    });
+    let balise = element.balise;
+    let title = element.title;
+    let text = element.text;
+    let children = element.children;
 
-    element += `</${node.balise}>`;
-    return element;
+    // Pour les titres on affiche le title et on parcourts les éléments fils et on appelle récusivement la fonction
+    if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(balise)) {
+      html += `<${balise}>${title}</${balise}>`;
+      if (children && Array.isArray(children)) {
+        children.forEach((child: any) => {
+          html += this.createHTMLElementRecursive(child);
+        });
+      }
+    }
+    // Pour les paragraphes on affiche simplement le texte
+    else if (balise === 'p') {
+      html += `<${balise}>${text}</${balise}>`;
+    }
+    // Pour les tables on affiche le text et on parcourt les éléments fils et on appelle récusivement la fonction
+    else if (balise === 'table') {
+      html += `<${balise}>`;
+      if (children && Array.isArray(children)) {
+        children.forEach((child: any) => {
+          if (child.balise === 'tr') {
+            html += `<tr>${this.createHTMLElementRecursive(child)}</tr>`;
+          }
+        });
+      }
+      html += `</${balise}>`;
+    }
+    else if (balise === 'tr') {
+      html += `<td>${title}</td><td>${text}</td>`;
+    }
+    // Pour les listes on affiche le text et on parcourt les éléments fils et on appelle récusivement la fonction
+    else if (balise === 'ul') {
+      html += `<${balise}>`;
+      if (children && Array.isArray(children)) {
+        children.forEach((child: any) => {
+          if (child.balise === 'li') {
+            html += `<li>${this.createHTMLElementRecursive(child)}</li>`;
+          }
+        });
+      }
+      html += `</${balise}>`;
+    }
+    // Pour les éléments de liste on affiche le texte s'il existe
+    else if (balise === 'li') {
+      html += `${text || ''}`;
+    }
+    return html;
   }
 }

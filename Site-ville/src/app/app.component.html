@@ -1,4 +1,4 @@
-<div id="body">
+<div [ngClass]="{'invisible' : showGraph, 'body' : !showGraph}">
   <h1 *ngIf="!showGraph" [ngClass]="{'blur' : loading}">Site de recherche d'information des villes de France</h1>
   <div *ngIf="!showGraph" [ngClass]="{'blur' : loading}" class="container-search">
     <div id="search">
@@ -21,8 +21,12 @@
     <img src="assets/images/chargement.gif" alt="Chargement en cours" class="loading"/>
   </div>
 
-  <!--<app-graph-display *ngIf="showGraph"></app-graph-display>-->
-  <p *ngIf="showGraph">Les données sont bien récupérées !!!</p>
+  <!--Choisir une autre ville-->
+  <div>
+    <button *ngIf="showGraph" (click)="showGraph = false" class="button">Choisir une autre ville</button>
+  </div>
+
+  <app-graph-display *ngIf="showGraph" [graphData]="graphData"></app-graph-display>
 
   <footer *ngIf="showGraph">
     <p>Site des villes de France</p>
