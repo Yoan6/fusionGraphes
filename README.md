@@ -8,6 +8,55 @@ Ce code contient un algorithme de fusion d'arborescence de graphe et un site web
 
 L'algorithme de fusion de graphe est codé avec la version Python3 et le site web est codé en Angular avec du TypeScript et du html/css.
 
+## Utilisation de l'environnement
+
+Pour récupérer le code il faut générer un fichier git : 
+
+```bash
+git init
+```
+
+Ensuite, il faut cloner le répertoire sur Github après avoir copié le lien en utilisant http ou ssh :
+
+```bash
+git clone <code-de-clonage-http-ou-ssh>
+```
+
+Après avoir fait cela, il faut créer un environnement virtuel :
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+ Il faut installer les librairies et dépendances :
+ 
+```bash
+pip install -r requirements.txt
+```
+
+Il faut par la suite lancer l'API Flask : 
+```bash
+python3 app.py
+```
+
+Pour la première utilisation du site, il faut installer les dépendances nécessaires. Pour cela, placez-vous dans le dossier racine du site et installer les dépendances :
+
+```bash
+cd Site-ville
+npm install
+```
+
+Après, il faut lancer le site Angular : 
+```bash
+ng serve --open
+```
+
+Info : l'option --open n'est pas obligatoire mais permet d'ouvrir le site en local dès le build fini du code
+
+Normalement, le site devrait s'ouvrir dans votre navigateur mais si ce n'est pas le cas, il est possible de le lancer en allant à l'url : localhost:5200.
+
+Sur le site web vous pouvez désormais sélectionner une ville et vous allez voir les informations sur celle-ci. Il est possible par la suite de sélectionner une autre ville ou d'exporter le site pour cette ville via deux bouton différents.
+
 ## Création de graphe avec NetworkX
 
 ### Création d'un graphe
@@ -202,63 +251,3 @@ L'API fonctionne sur le port 5000 (localhost:5000) et propose pour l'instant deu
   Cette route permet de lancer l'algorithme de fusion de graphe et d'envoyer les données récupérées
 - /export (POST)
   Cette route permet d'extraire la page web afin d'avoir le site d'une ville en local et de pouvoir l'afficher postérieurement sans passer par le site Angular.
-
-## Utilisation de l'environnement
-
-Pour récupérer le code il faut générer un fichier git : 
-
-```bash
-git init
-```
-
-Ensuite, il faut cloner le répertoire sur Github après avoir copié le lien en utilisant http ou ssh :
-
-```bash
-git clone <code-de-clonage-http-ou-ssh>
-```
-
-Après avoir fait cela, il faut créer un environnement virtuel :
-
-```bash
-python -m venv venv
-source venv/bin/activate
-```
- Il faut installer les librairies et dépendances :
- 
-```bash
-pip install -r requirements.txt
-```
-
-Il faut par la suite lancer l'API Flask : 
-```bash
-python3 app.py
-```
-
-Pour la première utilisation du site, il faut installer les dépendances nécessaires. Pour cela, placez-vous dans le dossier racine du site et installer les dépendances :
-
-```bash
-cd Site-ville
-npm install
-```
-
-Après, il faut lancer le site Angular : 
-```bash
-ng serve --open
-```
-
-Info : l'option --open n'est pas obligatoire mais permet d'ouvrir le site en local dès le build fini du code
-
-Normalement, le site devrait s'ouvrir dans votre navigateur mais si ce n'est pas le cas, il est possible de le lancer en allant à l'url : localhost:5200.
-
-Sur le site web vous pouvez désormais sélectionner une ville et vous allez voir les informations sur celle-ci. Il est possible par la suite de sélectionner une autre ville ou d'exporter le site pour cette ville via deux bouton différents.
-
-
-
-
-
-
-
-
-
-
-
