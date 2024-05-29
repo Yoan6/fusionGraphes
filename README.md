@@ -16,16 +16,17 @@ Pour récupérer le code il faut générer un fichier git :
 git init
 ```
 
-Ensuite, il faut cloner le répertoire sur Github après avoir copié le lien en utilisant http ou ssh :
+Ensuite, il faut cloner le répertoire sur Github après avoir copié le lien en utilisant http ou ssh puis se placer dans le répertoire créé :
 
 ```bash
 git clone <code-de-clonage-http-ou-ssh>
+cd fusionGraphes
 ```
 
 Après avoir fait cela, il faut créer un environnement virtuel :
 
 ```bash
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 ```
  Il faut installer les librairies et dépendances :
@@ -218,6 +219,22 @@ Pour automatiser l'accès aux données du fichier il faut créer une application
 ### Points d'intérêts
 
 Le site de dataTourisme est un peu spécial et suis une logique d'ontologie avec des points d'intérêts. Un point d'intérêt est un élément touristique qui est géré par un Agent et qui peut être consommé via des produits et services. Chaque élément de dataTourisme est un point d'intérêt mais il existe de nombreuse classes et sous-classes de points d'intérêt. L'ontologie des points d'intérêts est décrite précisément [ici](https://gitlab.adullact.net/adntourisme/datatourisme/ontology/-/blob/master/Documentation/Doc-ontologie-3.1.0-FR.pdf?ref_type=heads).
+
+## Utilisation des graphes
+
+Les graphes de chaque sites sont dans le répertoire Representations et le graphe de fusion est dans le répertoire Fusions.Il est possible de tester les fichiers des graphes Wikipédia, des élus municipaux et de DATAtourisme simplement en lançant les fichiers dans l'IDE de votre choix ou alors en les exécutant à partir d'un terminal. Exemple : 
+
+```bash
+python3 graph_wiki.py
+```
+
+Pour ce qui est du graphe de fusion c'est un exécutable dans il faut lui fournir les données dans l'ordre sur la ville en question, par exemple : 
+
+```bash
+python3 fusionGraphes.py "Mens" "38226" "Isère"
+```
+
+Dans l'ordre, il faut fournir le nom de la ville, le code de la ville et son département.
 
 ## Site web
 
