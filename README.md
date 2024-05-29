@@ -6,7 +6,7 @@ Ce code contient un algorithme de fusion d'arborescence de graphe et un site web
 - Plateforme nationale du tourisme en France OPENDATA (très fiable et très fournis)
 - Répertoire national des élus municipaux (très fiable, très fournis mais peu pour ce qui nous intéresse : les élus d'une ville)
 
-L'algorithme de fusion de graphe est codé en python et le site web est codé en Angular avec du TypeScript et du html/css.
+L'algorithme de fusion de graphe est codé avec la version Python3 et le site web est codé en Angular avec du TypeScript et du html/css.
 
 ## Création de graphe avec NetworkX
 
@@ -169,3 +169,83 @@ Pour automatiser l'accès aux données du fichier il faut créer une application
 ### Points d'intérêts
 
 Le site de dataTourisme est un peu spécial et suis une logique d'ontologie avec des points d'intérêts. Un point d'intérêt est un élément touristique qui est géré par un Agent et qui peut être consommé via des produits et services. Chaque élément de dataTourisme est un point d'intérêt mais il existe de nombreuse classes et sous-classes de points d'intérêt. L'ontologie des points d'intérêts est décrite précisément [ici](https://gitlab.adullact.net/adntourisme/datatourisme/ontology/-/blob/master/Documentation/Doc-ontologie-3.1.0-FR.pdf?ref_type=heads).
+
+## Site web
+
+Le site web est codé avec Angular et propose 2 services et un component en plus du component principal. 
+
+### Service city
+
+Ce service permet de faire de l'autocomplétion pour la sélection de ville en utilisant une API du gouvernement disponible à l'url : https://geo.api.gouv.fr/communes. Elle permet aussi de déterminer si la ville existe à partir de l'API.
+
+### Service graph
+
+Ce service permet de faire les appels à l'API Flask en fonction de ce que l'on veut faire (extraction des données et exportation du site)
+
+### Component graph-display
+
+Ce component sert à afficher le graphe en fonction d'une variable contenant les données json récupérées de l'API Flask.
+
+### Component principal : app
+Ce component permet de sélectionner une ville et d'afficher le component graph-display dès que l'algorithme de fusion de graphe a envoyé ses données via l'API Flask. Il y a un temps de chargement d'une dizaine de secondes dû à l'extraction des données du graphe des élus municipaux.
+
+## API Flask
+
+Pour faire le lien entre l'algorithme de fusion de graphe et le site web en Angular il y a une API Flask codé en Python (il est possible de trouver la documentation [ici](https://pythonbasics.org/flask-rest-api/)). Cette API doit être lancé avant de faire une recherche sur le site étant donné qu'elle fait le lien avec l'algorithme. Pour la lancer il faut lancer l'exécutable app.py : 
+
+```python
+python3 app.py
+```
+
+L'API fonctionne sur le port 5000 (localhost:5000) et propose pour l'instant deux routes : 
+- /extract (POST)
+  Cette route permet de lancer l'algorithme de fusion de graphe et d'envoyer les données récupérées
+- /export (POST)
+  Cette route permet d'extraire la page web afin d'avoir le site d'une ville en local et de pouvoir l'afficher postérieurement sans passer par le site Angular.
+
+## Utilisation de l'environnement
+
+Pour récupérer le code il faut générer un fichier git : 
+
+```bash
+git init
+```
+
+Ensuite, il faut cloner le répertoire sur Github après avoir copié le lien en utilisant http ou ssh :
+
+```bash
+git clone <code-de-clonage-http-ou-ssh>
+```
+
+Après avoir fait cela, il faut se placer dans un environnement virtuel afin de pouvoir utilsier les librairies et de Python : 
+```bash
+source venv/bin/activate
+```
+
+Il faut par la suite lancer l'API Flask : 
+```bash
+python3 app.py
+```
+
+Après, il faut lancer le site Angular : 
+```bash
+cd Site-ville
+ng serve --open
+```
+
+Info : l'option --open n'est pas obligatoire mais permet d'ouvrir le site en local dès le build fini du code
+
+Normalement, le site devrait s'ouvrir dans votre navigateur mais si ce n'est pas le cas, il est possible de le lancer en allant à l'url : localhost:5200.
+
+Sur le site web vous pouvez désormais sélectionner une ville et vous allez voir les informations sur celle-ci. Il est possible par la suite de sélectionner une autre ville ou d'exporter le site pour cette ville via deux bouton différents.
+
+
+
+
+
+
+
+
+
+
+
