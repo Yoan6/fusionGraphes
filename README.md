@@ -176,7 +176,7 @@ Le site web est codé avec Angular et propose 2 services et un component en plus
 
 ### Service city
 
-Ce service permet de faire de l'autocomplétion pour la sélection de ville en utilisant une API du gouvernement disponible à l'url : https://geo.api.gouv.fr/communes. Elle permet aussi de déterminer si la ville existe à partir de l'API.
+Ce service permet de faire de l'autocomplétion pour la sélection de ville en utilisant une API du gouvernement disponible à l'url : https://geo.api.gouv.fr/communes. Il permet aussi de déterminer si la ville existe à partir de l'API.
 
 ### Service graph
 
@@ -217,9 +217,16 @@ Ensuite, il faut cloner le répertoire sur Github après avoir copié le lien en
 git clone <code-de-clonage-http-ou-ssh>
 ```
 
-Après avoir fait cela, il faut se placer dans un environnement virtuel afin de pouvoir utilsier les librairies et de Python : 
+Après avoir fait cela, il faut créer un environnement virtuel :
+
 ```bash
+python -m venv venv
 source venv/bin/activate
+```
+ Il faut installer les librairies et dépendances :
+ 
+```bash
+pip install -r requirements.txt
 ```
 
 Il faut par la suite lancer l'API Flask : 
@@ -227,9 +234,15 @@ Il faut par la suite lancer l'API Flask :
 python3 app.py
 ```
 
-Après, il faut lancer le site Angular : 
+Pour la première utilisation du site, il faut installer les dépendances nécessaires. Pour cela, placez-vous dans le dossier racine du site et installer les dépendances :
+
 ```bash
 cd Site-ville
+npm install
+```
+
+Après, il faut lancer le site Angular : 
+```bash
 ng serve --open
 ```
 
