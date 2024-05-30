@@ -125,6 +125,7 @@ export class AppComponent implements OnInit {
       this.loading = true;
       this.code_commune = matchingCity.code;
       this.departement = matchingCity.departement.nom;
+      this.citiesList = [];
 
       // Si la ville sélectionnée est un toponyme, on affiche le département
       if (matchingCities.length > 1) {
