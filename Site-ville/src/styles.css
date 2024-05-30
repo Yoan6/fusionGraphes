@@ -13,3 +13,7 @@ app-root {
 .error {
   color: red;
 }
+
+.info {
+  color: blue;
+}

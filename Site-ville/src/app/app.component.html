@@ -5,7 +5,7 @@
       <p>Recherchez une ville pour obtenir des informations sur celle-ci</p>
       <form (ngSubmit)="onSubmit()">
         <input type="text" [(ngModel)]="city" name="city" (input)="search(city)" placeholder="Entrez un nom de ville" required autocomplete="off">
-        <button type="submit" [disabled]="loading" [ngClass]="{'loading-button': loading}">Rechercher</button>
+        <button type="submit" [disabled]="loading || noCityFound" [ngClass]="{'loading-button': loading}">Rechercher</button>
         <ul *ngIf="citiesList.length > 0">
           <li *ngFor="let city of citiesList" (click)="selectCity(city)">
             {{ city.nom }} ({{ city.departement.nom }})
@@ -13,6 +13,7 @@
         </ul>
         <section *ngIf="noCitySelected && !city" class="error">Veuillez sélectionner une ville</section>
         <section *ngIf="noCityFound && city" class="error">Aucune ville trouvée</section>
+        <section *ngIf="is_a_toponyme && !selectedCity" class="info">Cette ville est un toponyme, veuillez sélectionner votre ville parmis les propositions</section>
       </form>
     </div>
   </div>

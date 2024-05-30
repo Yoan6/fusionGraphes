@@ -4,8 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-ville = 'Mens'  # Ville pour laquelle on extraie les données
-code_commune = '38226'  # Code de la commune
+ville = 'Quaix-en-Chartreuse'  # Ville pour laquelle on extraie les données
+code_commune = '38328'  # Code de la commune
 
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
