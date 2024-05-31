@@ -14,12 +14,21 @@ node_id_counter = 0
 def clean_text(text):
     return text.replace('\xa0', ' ')
 
+# Fonction pour supprimer les balises <sup> d'un élément BeautifulSoup
+def remove_sup_tags(soup):
+    for sup in soup.find_all('sup'):
+        sup.decompose()
+    return soup
+
 # Fonction pour extraire les sections récursivement à partir d'une URL donnée
 def extract_sections_recursive(url):
     # Récupération de la réponse HTTP
     response = requests.get(url)
     # Analyse du contenu HTML de la page
     soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Suppression des balises <sup>
+    soup = remove_sup_tags(soup)
 
     # Extraction du titre de la page à partir de la balise <h1>
     page_title = soup.find('h1').text.strip()

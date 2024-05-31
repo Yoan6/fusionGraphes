@@ -8,7 +8,7 @@
   flex-direction: column;
 }
 
-/*Affichage du graphe*/
+/*Pour la visualisation du graphe*/
 .invisible {
   background-color: white;
   padding: 30px;
