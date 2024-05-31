@@ -201,6 +201,7 @@ def run(ville, departement, code_commune):
 
     # Si la ville a des tirets, on met en majuscule la première lettre de chaque mot
     ville_elu = ville.title()
+    print("Ville Elu: " + ville_elu)
 
     # Extraction des données du fichier CSV
     csv_file = extract_csv(url_elus)
@@ -415,8 +416,12 @@ def run(ville, departement, code_commune):
 
     #============Fusion entre le Wikipédia et celui du répertoire des élus municipaux==============
 
+    G = nx.DiGraph()
+
     # Fonction pour ajouter les fils d'un noeud d'un graphe à un autre graphe en gardant toute l'arborecence
     def add_nodes_recursive(graph, other_graph, node_id, parent_id=None):
+        global node_id_counter  # Utilisation de la variable externe node_id_counter
+
         # Récupération des informations du nœud
         info = other_graph.nodes[node_id]
 
@@ -433,30 +438,39 @@ def run(ville, departement, code_commune):
         for child_id in other_graph.successors(node_id):
             add_nodes_recursive(graph, other_graph, child_id, parent_id=node_id)
 
-
-    G = nx.DiGraph()
+    # On déclare le graphe G comme une copie du graphe de wikipédia
+    G = G_wiki.copy()
 
     if is_wikipedia_found and is_elus_found:
-        # On déclare le graphe G comme une copie du graphe de wikipédia
-        G = G_wiki.copy()
-
-        # On prend le graphe de wikipédia et on ajoute le noeud "Politique et administration" du graphe des élus. Le noeud aura comme attributs : {'title': 'Elus municipaux actuels', 'text': '', 'balise': 'h3'}
+        # Recherche du nœud "Politique et administration" dans le graphe G_wiki
+        politique_node_wiki = None
         for node in G_wiki.nodes:
             if G_wiki.nodes[node]['title'] == 'Politique et administration':
-                # Récupération du nœud "Politique et administration" dans le graphe Wiki
                 politique_node_wiki = node
+                break
 
-                # Récupération du nœud "Elus municipaux actuels" dans le graphe des élus
-                elus_node_id = None
-                for elus_node in G_elu.nodes:
-                    if G_elu.nodes[elus_node]['title'] == 'Elus municipaux':
-                        elus_node_id = elus_node
-                        break
+        # Si le nœud "Politique et administration" n'existe pas, on le crée
+        if politique_node_wiki is None:
+            node_id = node_id_counter
+            node_id_counter += 1
+            politique_node_wiki = node_id
+            G.add_node(politique_node_wiki, title='Politique et administration', text='', balise='h2')
+            node_labels[politique_node_wiki] = 'Politique et administration'
+            # On lie le nœud "Politique et administration" au nœud racine
+            G.add_edge(list(G.nodes)[0], politique_node_wiki)
+            edge_labels[(list(G.nodes)[0], politique_node_wiki)] = ''
 
-                # Vérification si le nœud "Elus municipaux" a été trouvé
-                if elus_node_id is not None:
-                    # Ajout du nœud "Elus municipaux" et de ses enfants dans le graphe final
-                    add_nodes_recursive(G, G_elu, elus_node_id, parent_id=politique_node_wiki)
+        # Recherche du nœud "Elus municipaux" dans le graphe des élus
+        elus_node_id = None
+        for elus_node in G_elu.nodes:
+            if G_elu.nodes[elus_node]['title'] == 'Elus municipaux':
+                elus_node_id = elus_node
+                break
+
+        # Vérification si le nœud "Elus municipaux" a été trouvé
+        if elus_node_id is not None:
+            # Ajout du nœud "Elus municipaux" et de ses enfants dans le graphe final
+            add_nodes_recursive(G, G_elu, elus_node_id, parent_id=politique_node_wiki)
 
 
     #============Fusion entre le graphe fusionné et les deux graphes de dataTourisme (économique et culturel)==============
