@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Ville
-ville = "Mens"
+ville = "La Tour-du-Pin"
 departement = "Isère"
 
 # Initialisation du compteur de nœuds
@@ -127,6 +127,9 @@ def build_graph(sections):
     add_nodes(sections)
     return G, node_labels, edge_labels
 
+# Si la ville a un nom composé avec des espaces, on les remplace par des underscores pour l'URL
+ville = ville.replace(' ', '_')
+
 # URL de la page Wikipedia à traiter
 url_wikipedia = 'https://fr.wikipedia.org/wiki/' + ville
 url_wikipedia_toponyme = 'https://fr.wikipedia.org/wiki/' + ville + '_(' + departement + ')'
@@ -139,7 +142,7 @@ def has_toponymes(url):
     h2_tags = soup.find_all('h2')
     if len(h2_tags) > 1:
         h2_tag = h2_tags[1]
-        return 'Toponyme' in h2_tag.text.split('[')[0]
+        return 'Géographie' not in h2_tag.text.split('[')[0]
 
 if has_toponymes(url_wikipedia):
     url_wikipedia = url_wikipedia_toponyme

@@ -4,8 +4,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Ville à rechercher
-ville = "Cras"
-code_commune = "38137"  # Code de la commune de Cras
+ville = "Montrichard Val De Cher"
+code_commune = "41151"  # Code de la commune de Cras
 
 # Compteur pour les identifiants des nœuds
 global node_id_counter
@@ -83,7 +83,7 @@ if etablissements_ville_recherchee:
                 edge_labels[(node_id_economique, node_id_etablissement)] = ''
 
                 # Ajout d'un nœud pour la description si elle existe
-                if 'owl:topObjectProperty' in objet and objet['owl:topObjectProperty']['shortDescription']['@value']:
+                if 'owl:topObjectProperty' in objet and objet['owl:topObjectProperty'] and 'shortDescription' in objet['owl:topObjectProperty']:
                     node_id_description = node_id_counter
                     node_id_counter += 1
                     G_economique.add_node(node_id_description, title="Description", text=objet['owl:topObjectProperty']['shortDescription']['@value'], balise="p")

@@ -4,8 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-ville = 'Quaix-en-Chartreuse'  # Ville pour laquelle on extraie les données
-code_commune = '38328'  # Code de la commune
+ville = 'Vourey'  # Ville pour laquelle on extraie les données
+code_commune = '38566'  # Code de la commune
 
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
@@ -33,6 +33,9 @@ url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/
 
 # Extraction des données du fichier CSV
 csv_file = extract_csv(url_elus)
+
+# Si la ville a des tirets, on met en majuscule la première lettre de chaque mot
+ville = ville.title()
 
 # Filtrage des données pour la ville en fonction du nom de la ville et du code de la commune
 ville_data = csv_file[(csv_file['Libellé de la commune'] == ville) & (csv_file['Code de la commune'] == code_commune)]
