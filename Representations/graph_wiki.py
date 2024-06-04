@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Ville
-ville = "La Tour-du-Pin"
+ville = "Voiron"
 departement = "Isère"
 
 # Initialisation du compteur de nœuds
@@ -149,9 +149,12 @@ def has_toponymes(url):
     soup = BeautifulSoup(response.text, 'html.parser')
     # Si la deuxième balise h2 est 'Toponyme' en enlevant toute la partie [modifier le code], alors la page contient des toponymes
     h2_tags = soup.find_all('h2')
-    if len(h2_tags) > 1:
-        h2_tag = h2_tags[1]
-        return 'Géographie' not in h2_tag.text.split('[')[0]
+    # Si la page ne contient pas de balises h2, c'est qu'il n'y a pas de toponymes
+    if len(h2_tags) == 0:
+        return True
+    h2_tag = h2_tags[1]
+    # Si la deuxième balise h2 n'est pas 'Géographie', alors la page contient des toponymes
+    return 'Géographie' not in h2_tag.text.split('[')[0]
 
 if has_toponymes(url_wikipedia):
     url_wikipedia = url_wikipedia_toponyme

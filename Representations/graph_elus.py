@@ -4,8 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-ville = 'Vourey'  # Ville pour laquelle on extraie les données
-code_commune = '38566'  # Code de la commune
+ville = 'Boucé'  # Ville pour laquelle on extraie les données
+code_commune = '03034'  # Code de la commune
 
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
@@ -36,6 +36,10 @@ csv_file = extract_csv(url_elus)
 
 # Si la ville a des tirets, on met en majuscule la première lettre de chaque mot
 ville = ville.title()
+
+# Si le code de la commune commence par 0, on le retire
+if code_commune.startswith('0'):
+    code_commune = code_commune[1:]
 
 # Filtrage des données pour la ville en fonction du nom de la ville et du code de la commune
 ville_data = csv_file[(csv_file['Libellé de la commune'] == ville) & (csv_file['Code de la commune'] == code_commune)]

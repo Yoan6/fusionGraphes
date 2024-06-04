@@ -1,5 +1,5 @@
 <div [ngClass]="{'invisible' : showGraph, 'body' : !showGraph}">
-  <h1 *ngIf="!showGraph" [ngClass]="{'blur' : loading}">Site de recherche d'information des villes de France</h1>
+  <h1 *ngIf="!showGraph" [ngClass]="{'blur' : loading}">Site de recherche d'information des communes de France</h1>
   <div *ngIf="!showGraph" [ngClass]="{'blur' : loading}" class="container-search">
     <div id="search">
       <p>Recherchez une ville pour obtenir des informations sur celle-ci</p>
@@ -30,8 +30,8 @@
   <app-graph-display *ngIf="showGraph" [graphData]="graphData"></app-graph-display>
 
   <footer *ngIf="showGraph">
-    <p>Site des villes de France</p>
-    <p>© 2024</p>
-    <p>Mention</p>
+    <p>Site de recherche d'information des communes de France</p>
+    <p>© LIG</p>
+    <a>Mentions légales</a>
   </footer>
 </div>

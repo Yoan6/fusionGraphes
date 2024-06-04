@@ -1,14 +1,17 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ComponentFactoryResolver, ViewChild, ViewContainerRef, ComponentRef, ElementRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { LeafletMapComponent } from '../leaflet-map/leaflet-map.component';
 
 @Component({
   selector: 'app-graph-display',
   templateUrl: './graph-display.component.html',
   styleUrls: ['./graph-display.component.css']
 })
-export class GraphDisplayComponent implements OnChanges {
-
+export class GraphDisplayComponent implements OnChanges, AfterViewInit {
   @Input() graphData: any;
   htmlContent: string = '';
+  @ViewChild('dynamicContent', { read: ViewContainerRef, static: true }) container!: ViewContainerRef;
+
+  constructor(private resolver: ComponentFactoryResolver, private elRef: ElementRef, private cdr: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['graphData'] && changes['graphData'].currentValue) {
@@ -16,71 +19,79 @@ export class GraphDisplayComponent implements OnChanges {
     }
   }
 
-  // Génère le code HTML à partir des données du graphe
-  generateHTMLContent() {
-    if (!this.graphData) return;
-
-    let element = this.graphData;
-
-    this.htmlContent = this.createHTMLElementRecursive(element);
+  ngAfterViewInit() {
+    this.insertDynamicComponents();
   }
 
-  // Parcourt des éléments du graphe pour générer le code HTML en fonction des balises
-  createHTMLElementRecursive(element: any) {
+  generateHTMLContent() {
+    if (!this.graphData) return;
+    this.container.clear();
+    this.htmlContent = this.createHTMLElementRecursive(this.graphData, '');
+    this.elRef.nativeElement.querySelector('#staticContent').innerHTML = this.htmlContent;
+  }
+
+  createHTMLElementRecursive(element: any, currentTitle: string): string {
+    if (!element) return '';
+
+    const { balise, title, text, children } = element;
     let html = '';
 
-    // Si il n'y a plus d'élément, on retourne le code HTML
-    if (!element) return html;
-
-    let balise = element.balise;
-    let title = element.title;
-    let text = element.text;
-    let children = element.children;
-
-    // Pour les titres on affiche le title et on parcourts les éléments fils et on appelle récusivement la fonction
     if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(balise)) {
       html += `<${balise}>${title}</${balise}>`;
+      currentTitle = title; // Mettre à jour le titre courant
       if (children && Array.isArray(children)) {
         children.forEach((child: any) => {
-          html += this.createHTMLElementRecursive(child);
+          html += this.createHTMLElementRecursive(child, currentTitle);
         });
       }
-    }
-    // Pour les paragraphes on affiche simplement le texte
-    else if (balise === 'p') {
-      html += `<${balise}>${text}</${balise}>`;
-    }
-    // Pour les tables on affiche le text et on parcourt les éléments fils et on appelle récusivement la fonction
-    else if (balise === 'table') {
+    } else if (balise === 'p') {
+      if (title === 'Coordonnées') {
+        const uniqueId = 'map-' + Math.random().toString(36).substr(2, 9);
+        html += `<div id="${uniqueId}" class="dynamic-map" data-coordinates="${text}" data-establishment-name="${currentTitle}"></div>`;
+      } else {
+        html += `<${balise}>${text}</${balise}>`;
+      }
+    } else if (balise === 'table') {
       html += `<${balise}>`;
       if (children && Array.isArray(children)) {
         children.forEach((child: any) => {
           if (child.balise === 'tr') {
-            html += `<tr>${this.createHTMLElementRecursive(child)}</tr>`;
+            html += `<tr>${this.createHTMLElementRecursive(child, currentTitle)}</tr>`;
           }
         });
       }
       html += `</${balise}>`;
-    }
-    else if (balise === 'tr') {
+    } else if (balise === 'tr') {
       html += `<td>${title}</td><td>${text}</td>`;
-    }
-    // Pour les listes on affiche le text et on parcourt les éléments fils et on appelle récusivement la fonction
-    else if (balise === 'ul') {
+    } else if (balise === 'ul') {
       html += `<${balise}>`;
       if (children && Array.isArray(children)) {
         children.forEach((child: any) => {
           if (child.balise === 'li') {
-            html += `<li>${this.createHTMLElementRecursive(child)}</li>`;
+            html += `<li>${this.createHTMLElementRecursive(child, currentTitle)}</li>`;
           }
         });
       }
       html += `</${balise}>`;
-    }
-    // Pour les éléments de liste on affiche le texte s'il existe
-    else if (balise === 'li') {
+    } else if (balise === 'li') {
       html += `${text || ''}`;
     }
+
     return html;
+  }
+
+  insertDynamicComponents() {
+    const placeholders = this.elRef.nativeElement.querySelectorAll('.dynamic-map');
+    placeholders.forEach((placeholder: HTMLElement) => {
+      const coordinates = placeholder.getAttribute('data-coordinates');
+      const establishmentName = placeholder.getAttribute('data-establishment-name');
+      const factory = this.resolver.resolveComponentFactory(LeafletMapComponent);
+      const componentRef: ComponentRef<LeafletMapComponent> = this.container.createComponent(factory);
+      componentRef.instance.coordinates = coordinates!;
+      componentRef.instance.establishmentName = establishmentName!;
+      componentRef.instance.mapId = placeholder.id;
+      placeholder.appendChild(componentRef.location.nativeElement);
+    });
+    this.cdr.detectChanges(); // Trigger change detection manually
   }
 }

@@ -166,9 +166,12 @@ def run(ville, departement, code_commune):
         soup = BeautifulSoup(response.text, 'html.parser')
         # Si la deuxième balise h2 est 'Toponyme' en enlevant toute la partie [modifier le code], alors la page contient des toponymes
         h2_tags = soup.find_all('h2')
-        if len(h2_tags) > 1:
-            h2_tag = h2_tags[1]
-            return 'Géographie' not in h2_tag.text.split('[')[0]
+        # Si la page ne contient pas de balises h2, c'est qu'il n'y a pas de toponymes
+        if len(h2_tags) == 0:
+            return True
+        h2_tag = h2_tags[1]
+        # Si la deuxième balise h2 n'est pas 'Géographie', alors la page contient des toponymes
+        return 'Géographie' not in h2_tag.text.split('[')[0]
 
     if has_toponymes(url_wikipedia):
         url_wikipedia = url_wikipedia_toponyme
@@ -214,6 +217,10 @@ def run(ville, departement, code_commune):
 
     # Extraction des données du fichier CSV
     csv_file = extract_csv(url_elus)
+
+    # Si le code de la commune commence par 0, on le retire
+    if code_commune.startswith('0'):
+        code_commune = code_commune[1:]
 
     # Filtrage des données pour la ville en fonction du nom de la ville et du code de la commune
     ville_data = csv_file[(csv_file['Libellé de la commune'] == ville_elu) & (csv_file['Code de la commune'] == code_commune)]
@@ -351,8 +358,8 @@ def run(ville, departement, code_commune):
                     G_economique.add_edge(node_id_economie, node_id_etablissement)
                     edge_labels[(node_id_economie, node_id_etablissement)] = ''
 
-                    # On crée un noeud pour la description de l'établissement si elle existe
-                    if 'owl:topObjectProperty' in objet and objet['owl:topObjectProperty']['shortDescription']['@value']:
+                    # Ajout d'un nœud pour la description si elle existe
+                    if 'owl:topObjectProperty' in objet and objet['owl:topObjectProperty'] and 'shortDescription' in objet['owl:topObjectProperty']:
                         node_id_description = node_id_counter
                         node_id_counter += 1
 

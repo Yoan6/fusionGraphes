@@ -4,8 +4,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Ville à rechercher
-ville = "Montrichard Val De Cher"
-code_commune = "41151"  # Code de la commune de Cras
+ville = "Mens"
+code_commune = "38226"  # Code de la commune
 
 # Compteur pour les identifiants des nœuds
 global node_id_counter

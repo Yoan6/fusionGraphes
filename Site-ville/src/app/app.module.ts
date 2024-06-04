@@ -6,11 +6,13 @@ import { AppComponent } from './app.component';
 import { GraphDisplayComponent } from './Components/graph-display/graph-display.component';
 import { FormsModule } from "@angular/forms";
 import { HttpClientModule } from "@angular/common/http";
+import { LeafletMapComponent } from './Components/leaflet-map/leaflet-map.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    GraphDisplayComponent
+    GraphDisplayComponent,
+    LeafletMapComponent
   ],
     imports: [
         BrowserModule,

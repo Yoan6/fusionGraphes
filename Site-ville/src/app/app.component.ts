@@ -10,7 +10,7 @@ import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operato
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title: string = 'Site d\'information des villes de France';
+  title: string = 'Site d\'information des communes de France';
 
   city: string = '';
   code_commune: string = '';
