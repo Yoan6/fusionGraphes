@@ -252,19 +252,33 @@ def run(ville, departement, code_commune):
                 # Ajout du titre du nœud dans le libellé pour l'affichage du graphe
                 node_labels[node_id] = nom_prenom
 
-                # Ajout des attributs de l'élu comme des nœuds de balise 'tr' sous le nœud 'table'
+                # Ajout des nœuds pour "Nom de l'élu" et "Prénom de l'élu" en premier
+                for key in ['Nom de l\'élu', 'Prénom de l\'élu']:
+                    value = row[key]
+                    if pd.notna(value):
+                        attribute_node_id = node_id_counter
+                        node_id_counter += 1
+                        # Ajout d'un noeud pour chaque attribut de l'élu
+                        G_elu.add_node(attribute_node_id, title=key, text=str(value), balise='tr')
+                        # Ajout du libellé du nœud pour l'affichage du graphe
+                        node_labels[attribute_node_id] = f"{key}: {value}"
+                        # Ajout d'un lien du nœud 'table' vers le nœud 'tr'
+                        G_elu.add_edge(node_id, attribute_node_id)
+
+                # Ajout des autres attributs de l'élu comme des nœuds de balise 'tr' sous le nœud 'table'
                 for k, v in row.items():
-                    # On transforme le texte des noeud en chaine de caractère pour permettre plus tard d'utiliser la fonction strip()
-                    v = str(v)
-                    attribute_node_id = node_id_counter
-                    node_id_counter += 1
-                    # Ajout d'un noeud pour chaque attribut de l'élu
-                    G_elu.add_node(attribute_node_id, title=k, text=str(v), balise='tr')
-                    # Ajout du libellé du nœud pour l'affichage du graphe
-                    node_labels[attribute_node_id] = f"{k}: {v}"
-                    # Ajout d'un lien du nœud 'title' vers le nœud 'tr'
-                    G_elu.add_edge(node_id, attribute_node_id)
-                # Ajoute un lien du nœud principal 'Elus municipaux' vers le nœud de l'élu
+                    # S'il y a une valeur qui n'est pas NaN et que ce n'est ni 'Nom de l\'élu' ni 'Prénom de l\'élu', on l'ajoute
+                    if pd.notna(v) and k not in ['Nom de l\'élu', 'Prénom de l\'élu']:
+                        attribute_node_id = node_id_counter
+                        node_id_counter += 1
+                        # Ajout d'un noeud pour chaque attribut de l'élu
+                        G_elu.add_node(attribute_node_id, title=k, text=str(v), balise='tr')
+                        # Ajout du libellé du nœud pour l'affichage du graphe
+                        node_labels[attribute_node_id] = f"{k}: {v}"
+                        # Ajout d'un lien du nœud 'table' vers le nœud 'tr'
+                        G_elu.add_edge(node_id, attribute_node_id)
+
+                # Ajoute un lien du nœud principal 'Elus municipaux' vers le nœud 'table' de l'élu
                 G_elu.add_edge(elus_node_id, node_id)
 
             # Création du nœud principal 'Elus municipaux'

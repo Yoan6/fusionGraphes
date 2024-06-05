@@ -24,4 +24,17 @@ app-root {
 .dynamic-map {
   height: 400px;
   width: 600px;
+  margin-bottom: 50px;
+}
+
+table {
+  margin-bottom: 30px;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+h3, h4, h5 {
+  margin-bottom: 10px;
 }

@@ -62,7 +62,13 @@ export class GraphDisplayComponent implements OnChanges, AfterViewInit {
       }
       html += `</${balise}>`;
     } else if (balise === 'tr') {
-      html += `<td>${title}</td><td>${text}</td>`;
+      // Si le titre de la ligne est le site web, on ajoute un lien et on ajoute 'http://' devant l'URL
+      if (title === 'Site web') {
+        const url = 'http://' + text;
+        html += `<td><bold>${title}</bold></td><td><a href="${url}" target="_blank">${text}</a></td>`;
+      } else {
+        html += `<td>${title}</td><td>${text}</td>`;
+      }
     } else if (balise === 'ul') {
       html += `<${balise}>`;
       if (children && Array.isArray(children)) {
