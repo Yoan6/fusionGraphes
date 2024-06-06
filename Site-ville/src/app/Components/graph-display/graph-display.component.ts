@@ -53,6 +53,8 @@ export class GraphDisplayComponent implements OnChanges, AfterViewInit {
       }
     } else if (balise === 'table') {
       html += `<${balise}>`;
+      // On ajoute le titre du tableau
+      html += `<tr><th colspan="2">${title}</th></tr>`;
       if (children && Array.isArray(children)) {
         children.forEach((child: any) => {
           if (child.balise === 'tr') {
@@ -62,9 +64,15 @@ export class GraphDisplayComponent implements OnChanges, AfterViewInit {
       }
       html += `</${balise}>`;
     } else if (balise === 'tr') {
-      // Si le titre de la ligne est le site web, on ajoute un lien et on ajoute 'http://' devant l'URL
       if (title === 'Site web') {
-        const url = 'http://' + text;
+        let url = text;
+        // Si le titre de la ligne est le site web, on ajoute un lien et on ajoute 'https://' devant l'URL s'il n'y est pas déjà
+        if (!text.startsWith('http://') && !text.startsWith('https://')) {
+          url = 'https://' + text;
+        }
+        else {
+          url = text;
+        }
         html += `<td><bold>${title}</bold></td><td><a href="${url}" target="_blank">${text}</a></td>`;
       } else {
         html += `<td>${title}</td><td>${text}</td>`;

@@ -29,10 +29,15 @@ app-root {
 
 table {
   margin-bottom: 30px;
+  border: 1px solid black;
 }
 
-h2 {
-  margin-bottom: 20px;
+td {
+  padding: 10px 10px 0 10px;
+}
+
+th {
+  border-bottom: 1px solid black;
 }
 
 h3, h4, h5 {

@@ -33,13 +33,15 @@ def run(ville, departement, code_commune):
             sup.decompose()
         return soup
 
-    # Fonction pour extraire les sections récursivement à partir d'une URL donnée
-    def extract_sections_recursive(url):
-        # Récupération de la réponse HTTP
+    # Extraction des données du site de Wikipedia
+    def extract_wikipedia(url):
         response = requests.get(url)
         # Analyse du contenu HTML de la page
         soup = BeautifulSoup(response.text, 'html.parser')
+        return soup
 
+    # Fonction pour extraire les sections à partir d'une URL donnée
+    def extract_sections(soup):
         # Suppression des balises <sup>
         soup = remove_sup_tags(soup)
 
@@ -176,8 +178,11 @@ def run(ville, departement, code_commune):
     if has_toponymes(url_wikipedia):
         url_wikipedia = url_wikipedia_toponyme
 
+    # Extraction des données de la page Wikipedia
+    soup = extract_wikipedia(url_wikipedia)
+
     # Extraction des sections récursivement à partir de l'URL donnée
-    sections = extract_sections_recursive(url_wikipedia)
+    sections = extract_sections(soup)
 
     if len(sections) > 1:
         is_wikipedia_found = True

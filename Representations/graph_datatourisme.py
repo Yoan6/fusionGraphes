@@ -18,8 +18,12 @@ def extract_data_tourisme(url):
     data = response.json()
     return data
 
-# URL pour télécharger le fichier JSON-LD
-url = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e651c/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+# URL pour télécharger le fichier JSON-LD (à changer selon le flux de données souhaité sur DATAtourisme)
+# URL pour le flux avec le département de l'Isère :
+# url = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e651c/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+
+# URL pour le flux avec les départements avec le plus de données :
+url = "https://diffuseur.datatourisme.fr/webservice/6d4c99395d621906226e38084555b15a/031aee5f-9dd7-4196-a677-610abe8fda77"    # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
 # Extraction des données de DataTourisme
 data = extract_data_tourisme(url)

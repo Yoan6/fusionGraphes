@@ -34,7 +34,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.cities$ = this.searchTerms.pipe(
-      debounceTime(100), // Attendre 100ms après chaque frappe avant de lancer la recherche
+      debounceTime(50), // Attendre 100ms après chaque frappe avant de lancer la recherche
       distinctUntilChanged(), // Ignorer le terme de recherche si c'est le même que le précédent
       switchMap((term: string) => this.cityService.searchCities(term).pipe(
         tap(cities => {
