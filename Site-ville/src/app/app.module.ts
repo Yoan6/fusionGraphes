@@ -7,12 +7,18 @@ import { GraphDisplayComponent } from './Components/graph-display/graph-display.
 import { FormsModule } from "@angular/forms";
 import { HttpClientModule } from "@angular/common/http";
 import { LeafletMapComponent } from './Components/leaflet-map/leaflet-map.component';
+import { MentionLegaleComponent } from './Components/mention-legale/mention-legale.component';
+import { HomeComponent } from './Components/home/home.component';
+import { GraphComponent } from './Components/graph/graph.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     GraphDisplayComponent,
-    LeafletMapComponent
+    LeafletMapComponent,
+    MentionLegaleComponent,
+    HomeComponent,
+    GraphComponent
   ],
     imports: [
         BrowserModule,

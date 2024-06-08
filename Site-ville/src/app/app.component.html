@@ -1,37 +1,8 @@
-<div [ngClass]="{'invisible' : showGraph, 'body' : !showGraph}">
-  <h1 *ngIf="!showGraph" [ngClass]="{'blur' : loading}">Site de recherche d'information des communes de France</h1>
-  <div *ngIf="!showGraph" [ngClass]="{'blur' : loading}" class="container-search">
-    <div id="search">
-      <p>Recherchez une ville pour obtenir des informations sur celle-ci</p>
-      <form (ngSubmit)="onSubmit()">
-        <input type="text" [(ngModel)]="city" name="city" (input)="search(city)" [readOnly]="loading" placeholder="Entrez un nom de ville" required autocomplete="off">
-        <button type="submit" [disabled]="loading || noCityFound" [ngClass]="{'loading-button': loading}">Rechercher</button>
-        <ul *ngIf="citiesList.length > 0">
-          <li *ngFor="let city of citiesList" (click)="selectCity(city)">
-            {{ city.nom }} ({{ city.departement.nom }})
-          </li>
-        </ul>
-        <section *ngIf="noCitySelected && !city" class="error">Veuillez sélectionner une ville</section>
-        <section *ngIf="noCityFound && city" class="error">Aucune ville trouvée</section>
-        <section *ngIf="is_a_toponyme && !selectedCity" class="info">Cette ville est un toponyme, veuillez sélectionner votre ville parmis les propositions</section>
-      </form>
-    </div>
-  </div>
+<div [ngClass]="{'body': router.url === '/', 'mentions-legales': router.url === '/mention-legale', 'graphe': router.url === '/graph'}">
+  <header>
+    <h1 *ngIf="router.url !== '/mention-legale' && router.url !== '/graph'">Site de recherche d'information des communes de France</h1>
+  </header>
 
-  <div *ngIf="loading">
-    <img src="assets/images/chargement.gif" alt="Chargement en cours" class="loading"/>
-  </div>
-
-  <!--Choisir une autre ville-->
-  <div>
-    <button *ngIf="showGraph" (click)="showGraph = false" class="button">Choisir une autre ville</button>
-  </div>
-
-  <app-graph-display *ngIf="showGraph" [graphData]="graphData"></app-graph-display>
-
-  <footer *ngIf="showGraph">
-    <p>Site de recherche d'information des communes de France</p>
-    <p>© LIG</p>
-    <a>Mentions légales</a>
-  </footer>
+  <router-outlet></router-outlet>
 </div>
+
