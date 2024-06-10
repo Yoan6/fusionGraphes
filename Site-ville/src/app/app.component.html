@@ -1,4 +1,4 @@
-<div [ngClass]="{'body': router.url === '/', 'mentions-legales': router.url === '/mention-legale', 'graphe': router.url === '/graph'}">
+<div [ngClass]="{'body': router.url === '/', 'mentions-legales': router.url.includes('/mention-legale'), 'graphe': router.url === '/graph'}">
   <header>
     <h1 *ngIf="router.url !== '/mention-legale' && router.url !== '/graph'">Site de recherche d'information des communes de France</h1>
   </header>
