@@ -47,25 +47,6 @@ def extract():
     else:
         return jsonify({'status': 'error', 'message': result.stderr})
 
-# @app.route('/export', methods=['POST'])
-# def export():
-#     data = request.json
-#     ville = data.get('ville')
-#     code_commune = data.get('code_commune')
-#     departement = data.get('departement')
-#
-#     script_path = 'Fusions/fusionGraphes.py'
-#     result = subprocess.run(['python3', script_path, ville, code_commune, departement], capture_output=True, text=True)
-#
-#     if result.returncode == 0:
-#         zip_file = 'Fusions/site_local.zip'
-#         if os.path.exists(zip_file):
-#             return send_file(zip_file, as_attachment=True)
-#         else:
-#             return jsonify({'status': 'error', 'message': 'Fichier ZIP non trouvé'}), 404
-#     else:
-#         return jsonify({'status': 'error', 'message': result.stderr}), 500
-
 
 if __name__ == '__main__':
     app.run(debug=True)

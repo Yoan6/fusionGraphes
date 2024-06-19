@@ -4,8 +4,9 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-ville = 'Boucé'  # Ville pour laquelle on extraie les données
-code_commune = '03034'  # Code de la commune
+ville = 'Mens'  # Ville pour laquelle on extraie les données
+code_commune = '38226'  # Code de la commune
+lastUpdate = ''  # Date de la dernière mise à jour
 
 # Compteur pour les identifiants des nœuds
 node_id_counter = 0
@@ -22,19 +23,24 @@ def extract_csv(url):
     header = soup.find('header', {'id': 'resource-d5f400de-ae3f-4966-8cb6-a85c70c6c24a-header'})
     # On récupère le lien de téléchargement du fichier CSV des élus municipaux
     download_a = header.find('a', {'class': 'fr-btn fr-btn--sm fr-icon-download-line matomo_download'})
+    # On récupère la date de la dernière mise à jour (commence par Mis à jour le)
+    lastUpdate = header.find('p', {'class': 'fr-text--xs fr-m-0 dash-after'}).text
     download_link = download_a['href']
     # On charge le fichier CSV dans un DataFrame
     data = pd.read_csv(download_link, dtype=str, sep=';', encoding='utf-8')
-    return data
+    return data, lastUpdate
 
 
 # URL du site des élus à traiter
 url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/'
 
 # Extraction des données du fichier CSV
-csv_file = extract_csv(url_elus)
+csv_file, lastUpdate = extract_csv(url_elus)
 
-# Si la ville a des tirets, on met en majuscule la première lettre de chaque mot
+# On récupère seulement la date de la dernière mise à jour
+lastUpdate = lastUpdate.replace('Mis à jour le ', '')
+
+# On met en majuscule la première lettre de chaque mot
 ville = ville.title()
 
 # Si le code de la commune commence par 0, on le retire
@@ -106,6 +112,13 @@ if len(ville_data) != 0:
         node_id_counter += 1
         G.add_node(elus_node_id, title='Elus municipaux', text='', balise='h3')
         node_labels[elus_node_id] = 'Elus municipaux'
+
+        # Ajout de la date de la dernière mise à jour
+        lastUpdate_node_id = node_id_counter
+        node_id_counter += 1
+        G.add_node(lastUpdate_node_id, title='Dernière modif élus', text=lastUpdate, balise='p')
+        node_labels[lastUpdate_node_id] = 'Dernière modif élus'
+        G.add_edge(elus_node_id, lastUpdate_node_id)
 
         # Ajout des nœuds et des attributs au graphe
         for _, row in csv_data.iterrows():

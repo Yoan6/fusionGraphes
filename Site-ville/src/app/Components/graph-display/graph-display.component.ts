@@ -13,32 +13,37 @@ export class GraphDisplayComponent implements OnChanges, AfterViewInit {
 
   constructor(private resolver: ComponentFactoryResolver, private elRef: ElementRef, private cdr: ChangeDetectorRef) {}
 
+  // Détecte les changements dans les données d'entrée et génère le contenu HTML statique
   ngOnChanges(changes: SimpleChanges) {
     if (changes['graphData'] && changes['graphData'].currentValue) {
       this.generateHTMLContent();
     }
   }
 
+  // Fonction appelée après l'initialisation des vues enfants pour insérer les composants dynamiques (cartes intéractives)
   ngAfterViewInit() {
     this.insertDynamicComponents();
   }
 
+  // Générer le contenu HTML statique à partir des données du graphe
   generateHTMLContent() {
     if (!this.graphData) return;
-    this.container.clear();
-    this.htmlContent = this.createHTMLElementRecursive(this.graphData, '');
-    this.elRef.nativeElement.querySelector('#staticContent').innerHTML = this.htmlContent;
+    this.container.clear();   // Nettoie les composants dynamiques précédents
+    this.htmlContent = this.createHTMLElementRecursive(this.graphData, '');   // Crée le contenu HTML
+    this.elRef.nativeElement.querySelector('#staticContent').innerHTML = this.htmlContent;    // Insère le contenu HTML dans le template dans la balise #staticContent
   }
 
+  // Fonction récursive pour créer le contenu HTML à partir des données du graphe
   createHTMLElementRecursive(element: any, currentTitle: string): string {
     if (!element) return '';
 
     const { balise, title, text, children } = element;
     let html = '';
 
+    // Si la balise est un titre, on l'ajoute au contenu HTML et on continue la récursion sur les enfants
     if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(balise)) {
       html += `<${balise}>${title}</${balise}>`;
-      currentTitle = title; // Mettre à jour le titre courant
+      currentTitle = title; // Mise à jour du titre courant
       if (children && Array.isArray(children)) {
         children.forEach((child: any) => {
           html += this.createHTMLElementRecursive(child, currentTitle);
@@ -48,7 +53,12 @@ export class GraphDisplayComponent implements OnChanges, AfterViewInit {
       if (title === 'Coordonnées') {
         const uniqueId = 'map-' + Math.random().toString(36).substr(2, 9);
         html += `<div id="${uniqueId}" class="dynamic-map" data-coordinates="${text}" data-establishment-name="${currentTitle}"></div>`;
-      } else {
+      }
+      // On n'affiche pas la dernière mise à jour des élus ou de DATAtourisme dans le contenu statique
+      else if (title == 'Dernière modif élus' || title == 'Dernière modif DATAtourisme') {
+        html += ``;
+      }
+      else {
         html += `<${balise}>${text}</${balise}>`;
       }
     } else if (balise === 'table') {
@@ -94,12 +104,13 @@ export class GraphDisplayComponent implements OnChanges, AfterViewInit {
     return html;
   }
 
+  // Insère les composants dynamiques dans les placeholders pour les cartes
   insertDynamicComponents() {
     const placeholders = this.elRef.nativeElement.querySelectorAll('.dynamic-map');
     placeholders.forEach((placeholder: HTMLElement) => {
       const coordinates = placeholder.getAttribute('data-coordinates');
       const establishmentName = placeholder.getAttribute('data-establishment-name');
-      const factory = this.resolver.resolveComponentFactory(LeafletMapComponent);
+      const factory = this.resolver.resolveComponentFactory(LeafletMapComponent);   //
       const componentRef: ComponentRef<LeafletMapComponent> = this.container.createComponent(factory);
       componentRef.instance.coordinates = coordinates!;
       componentRef.instance.establishmentName = establishmentName!;

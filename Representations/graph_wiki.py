@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Ville
-ville = "Voiron"
+ville = "Cras"
 departement = "Isère"
 
 # Initialisation du compteur de nœuds
@@ -143,23 +143,23 @@ ville = ville.replace(' ', '_')
 
 # URL de la page Wikipedia à traiter
 url_wikipedia = 'https://fr.wikipedia.org/wiki/' + ville
-url_wikipedia_toponyme = 'https://fr.wikipedia.org/wiki/' + ville + '_(' + departement + ')'
+url_wikipedia_homonyme = 'https://fr.wikipedia.org/wiki/' + ville + '_(' + departement + ')'
 
-# Fonction pour vérifier si une page Wikipedia contient des toponymes
-def has_toponymes(url):
+# Fonction pour vérifier si une page Wikipedia contient des communes homonymes
+def is_an_homonym(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     # Si la deuxième balise h2 est 'Toponyme' en enlevant toute la partie [modifier le code], alors la page contient des toponymes
     h2_tags = soup.find_all('h2')
-    # Si la page ne contient pas de balises h2, c'est qu'il n'y a pas de toponymes
+    # Si la page ne contient pas de balises h2, c'est qu'il n'y a pas d'homonymes
     if len(h2_tags) == 0:
         return True
     h2_tag = h2_tags[1]
-    # Si la deuxième balise h2 n'est pas 'Géographie', alors la page contient des toponymes
+    # Si la deuxième balise h2 n'est pas 'Géographie', alors la page contient des homonymes
     return 'Géographie' not in h2_tag.text.split('[')[0]
 
-if has_toponymes(url_wikipedia):
-    url_wikipedia = url_wikipedia_toponyme
+if is_an_homonym(url_wikipedia):
+    url_wikipedia = url_wikipedia_homonyme
 
 # Extraction des données de la page Wikipedia
 soup = extract_wikipedia(url_wikipedia)

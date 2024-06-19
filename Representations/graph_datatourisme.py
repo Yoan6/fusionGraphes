@@ -4,11 +4,10 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Ville à rechercher
-ville = "Mens"
-code_commune = "38226"  # Code de la commune
+ville = "Moirans"
+code_commune = "38239,"  # Code de la commune
 
 # Compteur pour les identifiants des nœuds
-global node_id_counter
 node_id_counter = 0
 
 # Fonction pour extraire les données de DataTourisme à partir de l'URL JSON-LD
@@ -20,13 +19,13 @@ def extract_data_tourisme(url):
 
 # URL pour télécharger le fichier JSON-LD (à changer selon le flux de données souhaité sur DATAtourisme)
 # URL pour le flux avec le département de l'Isère :
-# url = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e651c/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+url = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e651c/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
-# URL pour le flux avec les départements avec le plus de données :
-#url = "https://diffuseur.datatourisme.fr/webservice/6d4c99395d621906226e38084555b15a/031aee5f-9dd7-4196-a677-610abe8fda77"    # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+# URL pour le flux avec TOUS les départements :
+#url = "https://diffuseur.datatourisme.fr/webservice/7ac0037a21f50718b506b00401fba8a6/031aee5f-9dd7-4196-a677-610abe8fda77" # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
 # URL à prendre avec les bons départements :
-url = "https://diffuseur.datatourisme.fr/webservice/19d1980140e2c890eeb029fc4261f3fd/031aee5f-9dd7-4196-a677-610abe8fda77"    # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+#url = "https://diffuseur.datatourisme.fr/webservice/19d1980140e2c890eeb029fc4261f3fd/031aee5f-9dd7-4196-a677-610abe8fda77"    # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
 # Extraction des données de DataTourisme
 data = extract_data_tourisme(url)
@@ -38,8 +37,8 @@ def filter_data_tourisme(data, ville, code_commune):
     for objet in data['@graph']:
         if 'isLocatedAt' in objet and 'schema:address' in objet['isLocatedAt'] and 'schema:addressLocality' in objet['isLocatedAt']['schema:address']:
             ville_etablissement = objet['isLocatedAt']['schema:address']['schema:addressLocality']
-            code_commune_etablissement = objet['isLocatedAt']['schema:address']['hasAddressCity']['@id'][3:]
-            if ville == ville_etablissement and code_commune == code_commune_etablissement:
+            code_commune_etablissement = str(objet['isLocatedAt']['schema:address']['hasAddressCity']['@id'][3:])
+            if ville == ville_etablissement or code_commune == code_commune_etablissement:
                 etablissements_ville_recherchee.append(objet)
     return etablissements_ville_recherchee
 
@@ -106,6 +105,17 @@ if etablissements_ville_recherchee:
                     node_labels[node_id_coord] = "Coordonnées"
                     G_economique.add_edge(node_id_etablissement, node_id_coord)
                     edge_labels[(node_id_etablissement, node_id_coord)] = ''
+
+                # Ajout d'un noeud pour la dernière mise à jour
+                if 'lastUpdateDatatourisme' in objet:
+                    node_id_last_update = node_id_counter
+                    node_id_counter += 1
+                    # On transforme la date de la dernière mise à jour du format '2024-01-25T06:45:38.485Z' en '25/01/2024'
+                    lastUpdate = objet['lastUpdateDatatourisme']['@value'].split('T')[0].split('-')[::-1]
+                    G_economique.add_node(node_id_last_update, title="Dernière modif DATAtourisme", text=str('-'.join(lastUpdate)), balise="p")
+                    node_labels[node_id_last_update] = "Dernière modif DATAtourisme"
+                    G_economique.add_edge(node_id_etablissement, node_id_last_update)
+                    edge_labels[(node_id_etablissement, node_id_last_update)] = ''
             else:
                 G_culturel.add_node(node_id_etablissement, title=title, text="", balise="h4")
                 node_labels[node_id_etablissement] = title
@@ -131,6 +141,17 @@ if etablissements_ville_recherchee:
                     node_labels[node_id_coord] = "Coordonnées"
                     G_culturel.add_edge(node_id_etablissement, node_id_coord)
                     edge_labels[(node_id_etablissement, node_id_coord)] = ''
+
+                # Ajout d'un noeud pour la dernière mise à jour
+                if 'lastUpdateDatatourisme' in objet:
+                    node_id_last_update = node_id_counter
+                    node_id_counter += 1
+                    # On transforme la date de la dernière mise à jour du format '2024-01-25T06:45:38.485Z' en '25/01/2024'
+                    lastUpdate = objet['lastUpdateDatatourisme']['@value'].split('T')[0].split('-')[::-1]
+                    G_culturel.add_node(node_id_last_update, title="Dernière modif DATAtourisme", text=str('-'.join(lastUpdate)), balise="p")
+                    node_labels[node_id_last_update] = "Dernière modif DATAtourisme"
+                    G_culturel.add_edge(node_id_etablissement, node_id_last_update)
+                    edge_labels[(node_id_etablissement, node_id_last_update)] = ''
 
         # Ajout des nœuds pour chaque établissement
         for objet in data:

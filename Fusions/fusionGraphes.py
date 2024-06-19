@@ -12,9 +12,12 @@ def run(ville, departement, code_commune):
     code_commune = code_commune
     print(f"Ville: {ville}, Département: {departement}, Code commune: {code_commune}")
 
+    lastUpdateElus = ''  # Date de la dernière mise à jour pour les élus
+
     # Compteur pour les identifiants des nœuds
     global node_id_counter
     node_id_counter = 0
+
     is_datatourisme_found = False
     is_wikipedia_found = False
     is_elus_found = False
@@ -160,23 +163,23 @@ def run(ville, departement, code_commune):
 
     # URL de la page Wikipedia à traiter
     url_wikipedia = 'https://fr.wikipedia.org/wiki/' + ville_wikipedia
-    url_wikipedia_toponyme = 'https://fr.wikipedia.org/wiki/' + ville_wikipedia + '_(' + departement + ')'
+    url_wikipedia_homonyme = 'https://fr.wikipedia.org/wiki/' + ville_wikipedia + '_(' + departement + ')'
 
-    # Fonction pour vérifier si une page Wikipedia contient des toponymes
-    def has_toponymes(url):
+    # Fonction pour vérifier si une page Wikipedia contient des homonymes
+    def is_an_homonym(url):
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'html.parser')
         # Si la deuxième balise h2 est 'Toponyme' en enlevant toute la partie [modifier le code], alors la page contient des toponymes
         h2_tags = soup.find_all('h2')
-        # Si la page ne contient pas de balises h2, c'est qu'il n'y a pas de toponymes
+        # Si la page ne contient pas de balises h2, c'est qu'il n'y a pas d'homonymes
         if len(h2_tags) == 0:
             return True
         h2_tag = h2_tags[1]
-        # Si la deuxième balise h2 n'est pas 'Géographie', alors la page contient des toponymes
+        # Si la deuxième balise h2 n'est pas 'Géographie', alors la page contient des homonymes
         return 'Géographie' not in h2_tag.text.split('[')[0]
 
-    if has_toponymes(url_wikipedia):
-        url_wikipedia = url_wikipedia_toponyme
+    if is_an_homonym(url_wikipedia):
+        url_wikipedia = url_wikipedia_homonyme
 
     # Extraction des données de la page Wikipedia
     soup = extract_wikipedia(url_wikipedia)
@@ -208,20 +211,25 @@ def run(ville, departement, code_commune):
         header = soup.find('header', {'id': 'resource-d5f400de-ae3f-4966-8cb6-a85c70c6c24a-header'})
         # On récupère le lien de téléchargement du fichier CSV des élus municipaux
         download_a = header.find('a', {'class': 'fr-btn fr-btn--sm fr-icon-download-line matomo_download'})
+        # On récupère la date de la dernière mise à jour (commence par Mis à jour le)
+        lastUpdate = header.find('p', {'class': 'fr-text--xs fr-m-0 dash-after'}).text
         download_link = download_a['href']
         # On charge le fichier CSV dans un DataFrame
         data = pd.read_csv(download_link, dtype=str, sep=';', encoding='utf-8')
-        return data
+        return data, lastUpdate
 
     # URL du site des élus à traiter
     url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/'
 
-    # Si la ville a des tirets, on met en majuscule la première lettre de chaque mot
+    # On met en majuscule la première lettre de chaque mot
     ville_elu = ville.title()
     print("Ville Elu: " + ville_elu)
 
     # Extraction des données du fichier CSV
-    csv_file = extract_csv(url_elus)
+    csv_file, lastUpdateElus = extract_csv(url_elus)
+
+    # On récupère seulement la date de la dernière mise à jour
+    lastUpdateElus = lastUpdateElus.replace('Mis à jour le ', '')
 
     # Si le code de la commune commence par 0, on le retire
     if code_commune.startswith('0'):
@@ -292,6 +300,13 @@ def run(ville, departement, code_commune):
             G_elu.add_node(elus_node_id, title='Elus municipaux', text='', balise='h3')
             node_labels[elus_node_id] = 'Elus municipaux'
 
+            # Ajout de la date de la dernière mise à jour
+            lastUpdate_node_id = node_id_counter
+            node_id_counter += 1
+            G_elu.add_node(lastUpdate_node_id, title='Dernière modif élus', text=lastUpdateElus, balise='p')
+            node_labels[lastUpdate_node_id] = 'Dernière modif élus'
+            G_elu.add_edge(elus_node_id, lastUpdate_node_id)
+
             # Ajout des nœuds et des attributs au graphe
             for _, row in csv_data.iterrows():
                 add_nodes()
@@ -315,13 +330,13 @@ def run(ville, departement, code_commune):
     # URL pour télécharger le fichier JSON-LD (à changer selon le flux de données souhaité sur DATAtourisme)
 
     # URL pour le flux avec le département de l'Isère :
-    # url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e651c/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+    url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e651c/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
-    # URL pour le flux avec les départements avec le plus de données :
-    #url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/6d4c99395d621906226e38084555b15a/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+    # URL pour le flux avec TOUS les départements :
+    #url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/7ac0037a21f50718b506b00401fba8a6/031aee5f-9dd7-4196-a677-610abe8fda77" # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
     # URL à prendre avec les bons départements :
-    url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/19d1980140e2c890eeb029fc4261f3fd/031aee5f-9dd7-4196-a677-610abe8fda77"    # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+    #url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/19d1980140e2c890eeb029fc4261f3fd/031aee5f-9dd7-4196-a677-610abe8fda77"    # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
     # Extraction des données du fichier JSON-LD
     data = extract_dataTourisme(url_dataTourisme)
@@ -335,7 +350,7 @@ def run(ville, departement, code_commune):
                     objet['isLocatedAt']['schema:address']:
                 ville_etablissement = objet['isLocatedAt']['schema:address']['schema:addressLocality']
                 code_commune_etablissement = objet['isLocatedAt']['schema:address']['hasAddressCity']['@id'][3:]
-                if ville == ville_etablissement:
+                if ville == ville_etablissement or code_commune == code_commune_etablissement:
                     etablissements_ville_recherchee.append(objet)
         return etablissements_ville_recherchee
 
@@ -410,6 +425,17 @@ def run(ville, departement, code_commune):
                         G_economique.add_edge(node_id_etablissement, node_id_coord)
                         edge_labels[(node_id_etablissement, node_id_coord)] = ''
 
+                    # Ajout d'un noeud pour la dernière mise à jour
+                    if 'lastUpdateDatatourisme' in objet:
+                        node_id_last_update = node_id_counter
+                        node_id_counter += 1
+                        # On transforme la date de la dernière mise à jour du format '2024-01-25T06:45:38.485Z' en '25/01/2024'
+                        lastUpdate = objet['lastUpdateDatatourisme']['@value'].split('T')[0].split('-')[::-1]
+                        G_economique.add_node(node_id_last_update, title="Dernière modif DATAtourisme", text=str('-'.join(lastUpdate)), balise="p")
+                        node_labels[node_id_last_update] = "Dernière mise à jour"
+                        G_economique.add_edge(node_id_etablissement, node_id_last_update)
+                        edge_labels[(node_id_etablissement, node_id_last_update)] = ''
+
                 # Si l'établissement est culturel on l'ajoute au graphe culturel
                 else:
                     G_culturel.add_node(node_id_etablissement, title=title, text="", balise="h4")
@@ -443,6 +469,17 @@ def run(ville, departement, code_commune):
                         G_culturel.add_edge(node_id_etablissement, node_id_coord)
                         edge_labels[(node_id_etablissement, node_id_coord)] = ''
 
+                    # Ajout d'un noeud pour la dernière mise à jour
+                    if 'lastUpdateDatatourisme' in objet:
+                        node_id_last_update = node_id_counter
+                        node_id_counter += 1
+                        # On transforme la date de la dernière mise à jour du format '2024-01-25T06:45:38.485Z' en '25/01/2024'
+                        lastUpdate = objet['lastUpdateDatatourisme']['@value'].split('T')[0].split('-')[::-1]
+                        G_culturel.add_node(node_id_last_update, title="Dernière modif DATAtourisme", text=str('-'.join(lastUpdate)), balise="p")
+                        node_labels[node_id_last_update] = "Dernière mise à jour"
+                        G_culturel.add_edge(node_id_etablissement, node_id_last_update)
+                        edge_labels[(node_id_etablissement, node_id_last_update)] = ''
+
             # Ajout des noeuds et des attributs pour chaque établissement
             for objet in data:
                 add_nodes()
@@ -463,8 +500,6 @@ def run(ville, departement, code_commune):
 
     # Fonction pour ajouter les fils d'un noeud d'un graphe à un autre graphe en gardant toute l'arborecence
     def add_nodes_recursive(graph, other_graph, node_id, parent_id=None):
-        global node_id_counter  # Utilisation de la variable externe node_id_counter
-
         # Récupération des informations du nœud
         info = other_graph.nodes[node_id]
 

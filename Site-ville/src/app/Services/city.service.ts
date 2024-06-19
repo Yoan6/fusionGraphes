@@ -17,8 +17,4 @@ export class CityService {
     const url = `${this.apiUrl}?nom=${name}&fields=nom,departement,code&boost=population&limit=5`;
     return this.http.get<any[]>(url);
   }
-
-  cityExists(cityName: string, cities: any[]): boolean {
-    return cities.some(city => city.nom === cityName);
-  }
 }
