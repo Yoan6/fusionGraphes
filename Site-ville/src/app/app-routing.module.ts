@@ -7,7 +7,9 @@ import {GraphComponent} from "./Components/graph/graph.component";
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
-  { path: 'mention-legale/:cityWiki/:lastUpdateDATAtourisme/:lastUpdateElus', component: MentionLegaleComponent },
+  { path: 'mention-legale/:cityWiki/:lastUpdateElus/:lastUpdateDATAtourisme', component: MentionLegaleComponent },
+  { path: 'mention-legale/:cityWiki/:lastUpdateElus', component: MentionLegaleComponent },
+  { path : 'mention-legale/:cityWiki', component: MentionLegaleComponent },
   { path: 'graph', component: GraphComponent }
 ];
 

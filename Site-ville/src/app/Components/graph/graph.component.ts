@@ -32,6 +32,8 @@ export class GraphComponent implements OnInit {
   setLastUpdate() {
     if (!this.graphData) return;
     this.lastUpdateDATAtourisme = this.getLastUpdateDATAtourismeRecursive(this.graphData);
+    console.log('Last update DATAtourisme', this.lastUpdateDATAtourisme);
+    console.log('Last update élus', this.lastUpdateElus);
   }
 
   // Fonction récursive pour récupérer la date de la dernière mise à jour du graphe
