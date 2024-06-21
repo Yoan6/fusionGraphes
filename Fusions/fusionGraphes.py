@@ -1,10 +1,15 @@
 import argparse
+import tempfile
+
 import requests
 from bs4 import BeautifulSoup
 import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 import json
+
+from dask.dataframe import dd
+
 
 def run(ville, departement, code_commune):
     ville = ville
@@ -211,12 +216,22 @@ def run(ville, departement, code_commune):
         header = soup.find('header', {'id': 'resource-d5f400de-ae3f-4966-8cb6-a85c70c6c24a-header'})
         # On récupère le lien de téléchargement du fichier CSV des élus municipaux
         download_a = header.find('a', {'class': 'fr-btn fr-btn--sm fr-icon-download-line matomo_download'})
-        # On récupère la date de la dernière mise à jour (commence par Mis à jour le)
+        # On récupère la date de la dernière mise à jour
         lastUpdate = header.find('p', {'class': 'fr-text--xs fr-m-0 dash-after'}).text
         download_link = download_a['href']
-        # On charge le fichier CSV dans un DataFrame
-        data = pd.read_csv(download_link, dtype=str, sep=';', encoding='utf-8')
-        return data, lastUpdate
+
+        # Télécharge le fichier CSV et le stocke dans un fichier temporaire
+        with requests.get(download_link, stream=True) as r:
+            r.raise_for_status()
+            with tempfile.NamedTemporaryFile(delete=False, mode='w+b') as tmp_file:
+                for chunk in r.iter_content(chunk_size=8192):
+                    tmp_file.write(chunk)
+                tmp_file.flush()  # Vide le buffer pour s'assurer que toutes les données sont écrites
+
+        # Charge le fichier CSV dans un DataFrame Dask
+        data = dd.read_csv(tmp_file.name, dtype=str, sep=';', encoding='utf-8')
+
+        return data.compute(), lastUpdate
 
     # URL du site des élus à traiter
     url_elus = 'https://www.data.gouv.fr/fr/datasets/repertoire-national-des-elus-1/'
@@ -330,13 +345,13 @@ def run(ville, departement, code_commune):
     # URL pour télécharger le fichier JSON-LD (à changer selon le flux de données souhaité sur DATAtourisme)
 
     # URL pour le flux avec le département de l'Isère :
-    url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e651c/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+    #url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e651c/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
     # URL pour le flux avec TOUS les départements :
     #url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/7ac0037a21f50718b506b00401fba8a6/031aee5f-9dd7-4196-a677-610abe8fda77" # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
     # URL à prendre avec les bons départements :
-    #url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/19d1980140e2c890eeb029fc4261f3fd/031aee5f-9dd7-4196-a677-610abe8fda77"    # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+    url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/19d1980140e2c890eeb029fc4261f3fd/031aee5f-9dd7-4196-a677-610abe8fda77"    # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
     # Extraction des données du fichier JSON-LD
     data = extract_dataTourisme(url_dataTourisme)

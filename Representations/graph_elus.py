@@ -1,8 +1,11 @@
+import tempfile
+
 import networkx as nx
 import matplotlib.pyplot as plt
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import dask.dataframe as dd
 
 ville = 'Mens'  # Ville pour laquelle on extraie les données
 code_commune = '38226'  # Code de la commune
@@ -23,12 +26,22 @@ def extract_csv(url):
     header = soup.find('header', {'id': 'resource-d5f400de-ae3f-4966-8cb6-a85c70c6c24a-header'})
     # On récupère le lien de téléchargement du fichier CSV des élus municipaux
     download_a = header.find('a', {'class': 'fr-btn fr-btn--sm fr-icon-download-line matomo_download'})
-    # On récupère la date de la dernière mise à jour (commence par Mis à jour le)
+    # On récupère la date de la dernière mise à jour
     lastUpdate = header.find('p', {'class': 'fr-text--xs fr-m-0 dash-after'}).text
     download_link = download_a['href']
-    # On charge le fichier CSV dans un DataFrame
-    data = pd.read_csv(download_link, dtype=str, sep=';', encoding='utf-8')
-    return data, lastUpdate
+
+    # Télécharge le fichier CSV et le stocke dans un fichier temporaire
+    with requests.get(download_link, stream=True) as r:
+        r.raise_for_status()
+        with tempfile.NamedTemporaryFile(delete=False, mode='w+b') as tmp_file:
+            for chunk in r.iter_content(chunk_size=8192):
+                tmp_file.write(chunk)
+            tmp_file.flush()  # Vide le buffer pour s'assurer que toutes les données sont écrites
+
+    # Charge le fichier CSV dans un DataFrame Dask
+    data = dd.read_csv(tmp_file.name, dtype=str, sep=';', encoding='utf-8')
+
+    return data.compute(), lastUpdate
 
 
 # URL du site des élus à traiter
