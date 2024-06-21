@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, Input, AfterViewInit } from '@angular/core';
 import * as L from 'leaflet';
 
 @Component({
@@ -6,16 +6,21 @@ import * as L from 'leaflet';
   templateUrl: './leaflet-map.component.html',
   styleUrls: ['./leaflet-map.component.css']
 })
-export class LeafletMapComponent implements OnInit, AfterViewInit {
+export class LeafletMapComponent implements AfterViewInit {
   @Input() coordinates: string | undefined;
   @Input() establishmentName: string | undefined;
   @Input() mapId: string = '';
 
   private map: L.Map | undefined;
 
-  constructor() { }
-
-  ngOnInit(): void {}
+  constructor() {
+    // Configure the paths for marker icons
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'assets/images/leaflet/marker-icon-2x.png',
+      iconUrl: 'assets/images/leaflet/marker-icon.png',
+      shadowUrl: 'assets/images/leaflet/marker-shadow.png'
+    });
+  }
 
   ngAfterViewInit(): void {
     this.initMap();

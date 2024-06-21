@@ -345,13 +345,13 @@ def run(ville, departement, code_commune):
     # URL pour télécharger le fichier JSON-LD (à changer selon le flux de données souhaité sur DATAtourisme)
 
     # URL pour le flux avec le département de l'Isère :
-    #url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e651c/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+    url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/f4f07d2f40c98b4eb046da28af2e651c/031aee5f-9dd7-4196-a677-610abe8fda77"  # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
     # URL pour le flux avec TOUS les départements :
     #url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/7ac0037a21f50718b506b00401fba8a6/031aee5f-9dd7-4196-a677-610abe8fda77" # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
     # URL à prendre avec les bons départements :
-    url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/19d1980140e2c890eeb029fc4261f3fd/031aee5f-9dd7-4196-a677-610abe8fda77"    # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
+    #url_dataTourisme = "https://diffuseur.datatourisme.fr/webservice/19d1980140e2c890eeb029fc4261f3fd/031aee5f-9dd7-4196-a677-610abe8fda77"    # Clé API : 031aee5f-9dd7-4196-a677-610abe8fda77
 
     # Extraction des données du fichier JSON-LD
     data = extract_dataTourisme(url_dataTourisme)
