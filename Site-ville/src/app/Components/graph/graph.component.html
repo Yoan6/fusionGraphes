@@ -1,5 +1,12 @@
 <div *ngIf="graphData">
   <button (click)="goBack()" class="button">Choisir une autre ville</button>
+  <!-- Back to top banner -->
+  <div id="backToTopBanner" class="back-to-top-banner" (click)="scrollToTop()">
+    <img class="icon" src="assets/images/arrow-up.svg" alt="Retour en haut">
+    Revenir en haut
+    <img class="icon" src="assets/images/arrow-up.svg" alt="Retour en haut">
+  </div>
+
   <!-- Affichage du graphe -->
   <app-graph-display [graphData]="graphData"></app-graph-display>
 </div>

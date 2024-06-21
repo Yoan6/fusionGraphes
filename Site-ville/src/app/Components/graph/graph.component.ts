@@ -1,5 +1,5 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {Router} from "@angular/router";
+import { Component, Input, OnInit, HostListener } from '@angular/core';
+import { Router } from "@angular/router";
 
 @Component({
   selector: 'app-graph',
@@ -8,15 +8,16 @@ import {Router} from "@angular/router";
 })
 export class GraphComponent implements OnInit {
   graphData: any;
-  cityWiki: string = '';    // Permet d'avoir la ville avec le département pour les homonymes (Wikipédia) (sert pour la mention légale)
+  cityWiki: string = '';
   lastUpdateDATAtourisme: string = '';
   lastUpdateElus: string = '';
+  private lastScrollTop: number = 0;
+  private showBanner: boolean = false;
 
   constructor(private router: Router) {}
 
   ngOnInit() {
     this.graphData = history.state.data;
-    console.log('Graph data', this.graphData);
     this.cityWiki = history.state.cityWiki;
     if (!this.graphData) {
       this.router.navigate(['/']);
@@ -28,30 +29,21 @@ export class GraphComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
-  // Fonction pour récupérer la date de la dernière mise à jour du graphe pour les élus et les données DATAtourisme
   setLastUpdate() {
     if (!this.graphData) return;
     this.lastUpdateDATAtourisme = this.getLastUpdateDATAtourismeRecursive(this.graphData);
-    console.log('Last update DATAtourisme', this.lastUpdateDATAtourisme);
-    console.log('Last update élus', this.lastUpdateElus);
   }
 
-  // Fonction récursive pour récupérer la date de la dernière mise à jour du graphe
   getLastUpdateDATAtourismeRecursive(element: any): string {
     if (!element) return '';
 
     const { balise, title, text, children } = element;
     let lastUpdateDATAtourisme = '';
-
-    // Convertir le texte en objet Date si le texte représente une date
     const textDate = this.convertToDate(text);
 
-    // Si la balise est la dernière mise à jour des élus, on la récupère
     if (balise === 'p' && title === 'Dernière modif élus') {
       this.lastUpdateElus = text;
-    }
-    // Si la balise est un paragraphe, que le titre est 'Dernière modif DATAtourisme' et que la date est plus récente que la plus récente actuelle, on récupère le texte
-    else if (balise === 'p' && title === 'Dernière modif DATAtourisme' && textDate && (!lastUpdateDATAtourisme || textDate > this.convertToDate(lastUpdateDATAtourisme)!)) {
+    } else if (balise === 'p' && title === 'Dernière modif DATAtourisme' && textDate && (!lastUpdateDATAtourisme || textDate > this.convertToDate(lastUpdateDATAtourisme)!)) {
       lastUpdateDATAtourisme = text;
     } else if (children && Array.isArray(children)) {
       children.forEach((child: any) => {
@@ -64,19 +56,42 @@ export class GraphComponent implements OnInit {
     return lastUpdateDATAtourisme;
   }
 
-// Fonction pour convertir une chaîne de caractères en objet Date
   convertToDate(dateStr: string): Date | null {
     if (!dateStr) return null;
-
     const parts = dateStr.split('-');
-
-    // Si la date n'est pas au format 'jj-mm-aaaa', on retourne null
     if (parts.length !== 3) return null;
-
     const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // Les mois en JavaScript sont basés sur 0 (janvier est 0)
+    const month = parseInt(parts[1], 10) - 1;
     const year = parseInt(parts[2], 10);
-
     return new Date(year, month, day);
+  }
+
+  scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  @HostListener('window:scroll', [])
+  onScroll() {
+    const st = window.pageYOffset || document.documentElement.scrollTop;
+    if (st < this.lastScrollTop) {
+      this.showBanner = true;
+    } else {
+      this.showBanner = false;
+    }
+    this.lastScrollTop = st <= 0 ? 0 : st; // For Mobile or negative scrolling
+    this.toggleBanner();
+  }
+
+  // Montre oucache le bandeau de retour en haut de page
+  toggleBanner() {
+    const banner = document.getElementById('backToTopBanner');
+    if (banner) {
+      // Si on est en bas de page, on affiche le bandeau
+      if (this.showBanner && this.lastScrollTop > 0) {
+        banner.classList.add('show');
+      } else {
+        banner.classList.remove('show');
+      }
+    }
   }
 }

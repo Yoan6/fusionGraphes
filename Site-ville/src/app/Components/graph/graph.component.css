@@ -6,3 +6,29 @@ footer {
   background-color: #939393;
   color: #fff;
 }
+
+.back-to-top-banner {
+  display: none; /* caché par defaut */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent */
+  color: white;
+  text-align: center;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.back-to-top-banner:hover {
+  background-color: rgba(0, 0, 0, 0.8); /* plus foncé */
+}
+
+.back-to-top-banner.show {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
