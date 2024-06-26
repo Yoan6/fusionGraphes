@@ -56,7 +56,7 @@ Info : l'option --open n'est pas obligatoire mais permet d'ouvrir le site en loc
 
 Normalement, le site devrait s'ouvrir dans votre navigateur mais si ce n'est pas le cas, il est possible de le lancer en allant à l'url : localhost:5200.
 
-Sur le site web vous pouvez désormais sélectionner une ville et vous allez voir les informations sur celle-ci. Il est possible par la suite de sélectionner une autre ville ou d'exporter le site pour cette ville via deux bouton différents.
+Sur le site web vous pouvez désormais sélectionner une ville et vous allez voir les informations sur celle-ci. Il est possible par la suite de sélectionner une autre ville via un bouton en haut.
 
 ## Création de graphe avec NetworkX
 
@@ -155,10 +155,10 @@ Ensuite, il faut traiter tous les cas de balise qu'il peut y avoir et faire un a
 - ul (représente une liste)
 - li (représente une ligne de liste)
 
-Il est possible d'aller plus dans les détails et d'aller récupérer plus d'information et donc de balise différentes notamment sur le scrapping des pages web de Wikipédia.
+Il est possible d'aller plus dans les détails et d'aller récupérer plus d'information et donc de balises différentes notamment sur le scraping des pages web de Wikipédia.
 
 ## Création de graphe pour Wikipédia
-Pour la création de graphe pour Wikipédia il faut utiliser du scrapping à partir d'un url incluant la ville et récupérant les données html de la page wikipédia de la ville en question. Pour cela il faut utiliser un scrapper en python via la librairie [BeautifulSoup](https://pypi.org/project/beautifulsoup4/) et la librairie [requests](https://realpython.com/python-requests/). On l'utilise comme cela pour récupérer le contenu html d'un site à partir de son url :
+Pour la création de graphe pour Wikipédia il faut utiliser du scraping à partir d'un url incluant la ville et récupérant les données html de la page wikipédia de la ville en question. Pour cela il faut utiliser un scraper en python via la librairie [BeautifulSoup](https://pypi.org/project/beautifulsoup4/) et la librairie [requests](https://realpython.com/python-requests/). On l'utilise comme cela pour récupérer le contenu html d'un site à partir de son url :
 
 ``` python
 # Récupération de la réponse HTTP
@@ -214,7 +214,7 @@ for _, row in csv_data.iterrows():
 
 Avant de faire quoique ce soit il faut tout d'abord se créer un compte diffuseur sur le site de [dataTourisme](https://diffuseur.datatourisme.fr/fr/) qui va permettre de créer un flux de donnée. Il faut ensuite créer un flux de donnée en renseignant les départements de France et les classes de points d'intérêts qui nous intéressent, puis de finaliser la création du flux en indiquant le type de fichier que l'on veut (il faut choisir jsonLD). A partir de celui-ci il faudra attendre le lendemain à 9h du matin pour pouvoir avoir accès au fichier car les fichiers sont mis à jour et peuvent être rechargé chaque matin à 9h. 
 
-Pour automatiser l'accès aux données du fichier il faut créer une application sur le site dataTourisme en indiquant l'url que l'on veut et cela va nous donner une clé API qu'il faudra fournir pour accéder aux fichier automatiquement.
+Pour automatiser l'accès aux données du fichier il faut créer une application sur le site dataTourisme en indiquant l'url que l'on veut et cela va nous donner une clé API qu'il faudra fournir pour accéder aux fichier automatiquement. Il faut ensuite ajouter le lien complet contenant le lien du flux suivi de la clé API de l'application dans le code du fichier Python fusionGraphes.py au début de la création du graphe de DATAtourisme, juste après la fonction extract_dataTourisme(url). Les flux déjà existant peuvent être remplacés car inutilisable.
 
 ### Points d'intérêts
 
@@ -222,7 +222,7 @@ Le site de dataTourisme est un peu spécial et suis une logique d'ontologie avec
 
 ## Utilisation des graphes
 
-Les graphes de chaque sites sont dans le répertoire Representations et le graphe de fusion est dans le répertoire Fusions.Il est possible de tester les fichiers des graphes Wikipédia, des élus municipaux et de DATAtourisme simplement en lançant les fichiers dans l'IDE de votre choix ou alors en les exécutant à partir d'un terminal. Exemple : 
+Les graphes de chaque sites sont dans le répertoire Representations et le graphe de fusion est dans le répertoire Fusions. Il est possible de tester les fichiers des graphes Wikipédia, des élus municipaux et de DATAtourisme simplement en lançant les fichiers dans l'IDE de votre choix ou alors en les exécutant à partir d'un terminal. Exemple : 
 
 ```bash
 python3 graph_wiki.py
@@ -238,7 +238,7 @@ Dans l'ordre, il faut fournir le nom de la ville, le code de la ville et son dé
 
 ## Site web
 
-Le site web est codé avec Angular et propose 2 services et un component en plus du component principal. 
+Le site web est codé avec Angular et propose 2 services et 5 composants en plus du composant principal.
 
 ### Service city
 
@@ -248,12 +248,29 @@ Ce service permet de faire de l'autocomplétion pour la sélection de ville en u
 
 Ce service permet de faire les appels à l'API Flask en fonction de ce que l'on veut faire (extraction des données et exportation du site)
 
-### Component graph-display
+### Composant graph
 
-Ce component sert à afficher le graphe en fonction d'une variable contenant les données json récupérées de l'API Flask.
+Ce composant permet de fournir les données json récupérées et les fournir au composant graph-display en l'affichant, ainsi que le nom de de la commune selon Wikipédia et la dernière date de mise à jour pour les données de DATAtourisme et du répertoire des élus. Il permet également d'afficher le pied de page avec les mentions légales et donc de faire le lien vers le composant mention-legale.
 
-### Component principal : app
-Ce component permet de sélectionner une ville et d'afficher le component graph-display dès que l'algorithme de fusion de graphe a envoyé ses données via l'API Flask. Il y a un temps de chargement d'une dizaine de secondes dû à l'extraction des données du graphe des élus municipaux.
+### Composant graph-display
+
+Ce composant sert à afficher le graphe en fonction d'une variable contenant les données json récupérées de l'API Flask. Il faut traiter chaque élément en fonction de sa balise afin de créer des balises en fonction de l'élément. Le composant permet de créer des cartes intéractives en appelant le composant leaflet-map avec les coordonées gps récupérées des données du graphe de DATAtourisme. 
+
+### Composant home
+
+Ce composant permet de sélectionner une ville et d'afficher le composant graph dès que l'algorithme de fusion de graphe a envoyé ses données via l'API Flask. Il y a un temps de chargement d'une dizaine de secondes dû à l'extraction des données du graphe des élus municipaux.
+
+### Composant mention-legale
+
+Ce composant affiche les mentions légale pour une commune données en définissant le propriétaire du site, ses fonctionnalités, les conditions d'utilisations en mentionnant les sites sources ainsi que des liens vers ceux-ci. 
+
+### Composant leaflet-map
+
+Ce composant sert à afficher une carte intéractive à partir de coordonées gps.
+
+### Composant principal : app
+
+Ce composant permet d'afficher les composants selon la page qui est demandée via une table de routage (gérée dans le fichier app-routing.module.ts).
 
 ## API Flask
 
@@ -263,8 +280,10 @@ Pour faire le lien entre l'algorithme de fusion de graphe et le site web en Angu
 python3 app.py
 ```
 
-L'API fonctionne sur le port 5000 (localhost:5000) et propose pour l'instant deux routes : 
+L'API fonctionne sur le port 5000 (localhost:5000) et propose pour l'instant une route : 
 - /extract (POST)
   Cette route permet de lancer l'algorithme de fusion de graphe et d'envoyer les données récupérées
+
+Une route pourra être ajoutée dès que la fonctionnalité d'export du site sera faite, comme cela :
 - /export (POST)
   Cette route permet d'extraire la page web afin d'avoir le site d'une ville en local et de pouvoir l'afficher postérieurement sans passer par le site Angular.
