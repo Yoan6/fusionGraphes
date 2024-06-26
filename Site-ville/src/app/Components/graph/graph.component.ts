@@ -34,6 +34,7 @@ export class GraphComponent implements OnInit {
     this.lastUpdateDATAtourisme = this.getLastUpdateDATAtourismeRecursive(this.graphData);
   }
 
+  // Parcours récursif de l'arbre de données pour trouver la date de dernière mise à jour DATAtourisme
   getLastUpdateDATAtourismeRecursive(element: any): string {
     if (!element) return '';
 
@@ -56,6 +57,7 @@ export class GraphComponent implements OnInit {
     return lastUpdateDATAtourisme;
   }
 
+  // Convertit une date au format 'dd-mm-yyyy' en objet Date
   convertToDate(dateStr: string): Date | null {
     if (!dateStr) return null;
     const parts = dateStr.split('-');
@@ -66,6 +68,7 @@ export class GraphComponent implements OnInit {
     return new Date(year, month, day);
   }
 
+  // Retourne en haut de la page
   scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -82,7 +85,7 @@ export class GraphComponent implements OnInit {
     this.toggleBanner();
   }
 
-  // Montre oucache le bandeau de retour en haut de page
+  // Montre ou cache le bandeau de retour en haut de page
   toggleBanner() {
     const banner = document.getElementById('backToTopBanner');
     if (banner) {

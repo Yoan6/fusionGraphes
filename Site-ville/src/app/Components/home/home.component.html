@@ -2,7 +2,7 @@
   <div [ngClass]="{'blur' : loading}" id="search">
     <p>Recherchez une commune pour obtenir des informations sur celle-ci</p>
     <form (ngSubmit)="onSubmit()">
-      <input type="text" [(ngModel)]="city" name="city" (input)="search(city)" [readOnly]="loading" placeholder="Entrez un nom de ville" required autocomplete="off">
+      <input type="text" [(ngModel)]="city" name="city" (input)="search(city)" [readOnly]="loading" placeholder="Entrez un nom de commune" required autocomplete="off">
       <button type="submit" [disabled]="loading || noCityFound" [ngClass]="{'loading-button': loading}">Rechercher</button>
       <ul *ngIf="citiesList.length > 0">
         <li *ngFor="let city of citiesList" (click)="selectCity(city)">
