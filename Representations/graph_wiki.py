@@ -84,7 +84,7 @@ def process_section(tag, parents):
     # Récupération du niveau de la balise
     level = int(tag.name[1])
     # Récupération du titre de la section
-    title = clean_text(tag.text.strip().split('[')[0])
+    title = clean_text(tag.text.strip())
 
     # Déplacement dans la hiérarchie des sections si un niveau inférieur est rencontré
     while len(parents) >= level:
@@ -97,7 +97,7 @@ def process_section(tag, parents):
     parents.append(new_node)
 
     # Récupération du texte directement sous la balise h*
-    current_tag = tag.find_next_sibling()
+    current_tag = tag.find_next(lambda t: t.name in ['p', 'ul', 'h2', 'h3', 'h4', 'h5', 'h6'])
     while current_tag and current_tag.name not in ['h2', 'h3', 'h4', 'h5', 'h6']:
         if current_tag.name == 'p':
             # Création d'un nouveau nœud pour chaque balise <p>
@@ -106,7 +106,7 @@ def process_section(tag, parents):
             # Création d'un nouveau nœud pour la balise <ul> et ses <li>
             ul_node = {'title': 'Unordered List', 'text': '', 'balise': 'ul', 'children': [{'title': 'List Item', 'text': clean_text(li.get_text().strip()), 'balise': 'li', 'children': []} for li in current_tag.find_all('li')]}
             new_node['children'].append(ul_node)
-        current_tag = current_tag.find_next_sibling()
+        current_tag = current_tag.find_next(lambda t: t.name in ['p', 'ul', 'h2', 'h3', 'h4', 'h5', 'h6'])
 
 # Fonction pour construire le graphe des sections et sous-sections
 def build_graph(sections):
@@ -156,7 +156,7 @@ def is_an_homonym(url):
         return True
     h2_tag = h2_tags[1]
     # Si la deuxième balise h2 n'est pas 'Géographie', alors la page contient des homonymes
-    return 'Géographie' not in h2_tag.text.split('[')[0]
+    return 'Géographie' not in h2_tag
 
 if is_an_homonym(url_wikipedia):
     url_wikipedia = url_wikipedia_homonyme
